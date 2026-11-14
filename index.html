@@ -82,6 +82,38 @@
   .stack{flex-direction:column}
   .stack .btn.ghost{flex:1}
   #start .btn{background:linear-gradient(90deg,#FF5A5F,#FF8A00);box-shadow:0 8px 22px -8px #FF5A5F}
+
+  /* timer button */
+  .tbtn{margin-top:16px;width:100%;border:none;border-radius:20px;padding:16px;font-family:inherit;font-size:19px;font-weight:700;
+    color:var(--c);background:#fff;box-shadow:0 0 0 3px var(--c) inset;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer}
+  .tbtn svg{width:22px;height:22px;fill:var(--c)}
+  .tbtn:active{transform:scale(.98)}
+  /* timer overlay */
+  .tm{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:space-between;
+    background:var(--c);color:#fff;padding:calc(24px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom));transition:background .3s}
+  .tm.on{display:flex}
+  .tm.rest{background:#fff;color:var(--ink)}
+  .tm-top{text-align:center}
+  .tm-name{font-size:18px;font-weight:700;opacity:.85}
+  .tm-side{font-size:15px;opacity:.75;margin-top:2px}
+  .tm-mid{display:flex;flex-direction:column;align-items:center;gap:18px}
+  .tm-phase{font-size:40px;font-weight:900;text-align:center;line-height:1.2;min-height:1.2em}
+  .ring{position:relative;width:min(68vw,300px);aspect-ratio:1}
+  .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+  .ring circle{fill:none;stroke-width:14}
+  .ring .trk{stroke:rgba(255,255,255,.28)}
+  .ring .prg{stroke:#fff;stroke-linecap:round;transition:stroke-dashoffset .12s linear}
+  .tm.rest .ring .trk{stroke:#EFE7DC} .tm.rest .ring .prg{stroke:var(--c)}
+  .ring .num{position:absolute;inset:0;display:grid;place-items:center;font-size:96px;font-weight:900;font-variant-numeric:tabular-nums}
+  .tm-count{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+  .tm-count small{font-size:15px;opacity:.75;font-weight:500;margin-left:8px}
+  .tm-btns{display:flex;gap:12px;width:100%;max-width:440px}
+  .tm-btns button{flex:1;border:none;border-radius:20px;padding:18px;font-family:inherit;font-size:18px;font-weight:700;cursor:pointer;
+    background:rgba(255,255,255,.22);color:#fff}
+  .tm-btns button.main{background:#fff;color:var(--c)}
+  .tm.rest .tm-btns button{background:#F3EDE4;color:var(--ink)}
+  .tm.rest .tm-btns button.main{background:var(--c);color:#fff}
+  .tm-hint{font-size:13px;opacity:.7;text-align:center;margin-top:-6px}
 </style>
 </head>
 <body>
@@ -137,6 +169,19 @@
     <div class="nav"><button class="btn" id="restart" style="--c:#06D6A0">回到开始</button></div>
   </section>
 
+  <div class="tm" id="tm">
+    <div class="tm-top"><div class="tm-name" id="tmName"></div><div class="tm-side" id="tmSide"></div></div>
+    <div class="tm-mid">
+      <div class="tm-phase" id="tmPhase"></div>
+      <div class="ring"><svg viewBox="0 0 120 120"><circle class="trk" cx="60" cy="60" r="52"/><circle class="prg" id="tmPrg" cx="60" cy="60" r="52"/></svg><div class="num" id="tmNum"></div></div>
+      <div class="tm-count" id="tmCount"></div>
+    </div>
+    <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px">
+      <div class="tm-btns" id="tmBtns"></div>
+      <div class="tm-hint" id="tmHint">听不到声音？关掉手机侧面的静音键</div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -145,11 +190,12 @@ const IMGS = ["data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAcFBQYFBA
 const STEPS = [
   { zh:"腹横肌激活", pose:"仰卧", c:"#FF5A5F", dose:[["10","次"],["5","秒"],["1","组"]],
     how:["仰卧屈膝","肚脐往下沉，下背压地","拇指放骨盆内侧，感受收紧"] },
-  { zh:"开书式", pose:"侧躺", c:"#FF8A00", dose:[["10","次"],["5–10","秒"],["1","组"]],
+  { zh:"开书式", pose:"侧躺", c:"#FF8A00", dose:[["10","次"],["5","秒"],["1","组"]],
     split:["打开左臂","打开右臂"],
     how:["侧躺，屈膝 90°，双臂前伸","上臂向后打开成 T 字，头跟着转","停留，再合回"] },
   { zh:"猫牛式", pose:"跪趴", c:"#06B6A4", dose:[["10","次"],["5","秒"],["1","组"]],
     how:["吸气：塌腰，抬头","呼气：拱背，低头"],
+    phases:[{t:"吸气 · 塌腰抬头",say:"吸气，塌腰",sec:5},{t:"呼气 · 拱背低头",say:"呼气，拱背",sec:5}],
     tip:"骨盆像一桶水：吸气往前倒，呼气往后倒" },
   { zh:"鸟狗式", pose:"跪趴", c:"#3A86FF", dose:[["10","次"],["5","秒"],["1","组"]],
     split:["左腿 + 右臂","右腿 + 左臂"],
@@ -167,7 +213,7 @@ const STEPS = [
     how:["一条腿伸直","抬起臀部","骨盆保持水平"] },
   { zh:"弹力带划船", pose:"站立", c:"#F4511E", optional:true, dose:[["10","次"],["5","秒"],["2","组"]],
     how:["弹力带绕在固定点，双手握两端","后退拉紧，屈肘拉向胸口","夹紧肩胛骨，保持"] },
-  { zh:"抗旋转推", pose:"站立", c:"#0EA5E9", optional:true, dose:[["10","次"],["2","组"]],
+  { zh:"抗旋转推", pose:"站立", c:"#0EA5E9", optional:true, pace:4, dose:[["10","次"],["2","组"]],
     how:["双手握带，迈步到有张力","双脚与肩同宽，膝盖微屈","从胸口向前推出，再收回"] }
 ];
 
@@ -197,27 +243,187 @@ function render(){
     ${s.side?`<div class="side">${s.side}</div>`:''}
     <figure class="photo"><img src="${IMGS[s.img]}" alt="${s.zh}"></figure>
     <div class="dose">${s.dose.map(d=>`<div><b>${d[0]}</b><span>${d[1]}</span></div>`).join('')}</div>
+    <button class="tbtn" id="tbtn"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg>开始计时</button>
     <ul class="how">${s.how.map(h=>`<li>${h}</li>`).join('')}</ul>
     ${s.tip?`<div class="tip">${s.tip}</div>`:''}
   `;
+  $('tbtn').onclick = startTimer;
   const b = $('stepbody'); b.style.animation='none'; b.offsetHeight; b.style.animation='';
   $('prev').disabled = (i===0);
   $('next').textContent = (i===FLOW.length-1 || (i===CORE-1 && !inOptional)) ? '完成' : '下一步';
   show('step');
 }
 
+
+/* ===== timer + voice ===== */
+const REST = 3, SET_REST = 30, PREP = 3;
+let actx = null, zhVoice = null;
+function unlockAudio(){
+  try{
+    if(!actx){ const C = window.AudioContext||window.webkitAudioContext; if(C) actx = new C(); }
+    if(actx && actx.state==='suspended') actx.resume();
+    if(actx){ const o=actx.createOscillator(), g=actx.createGain(); g.gain.value=0; o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime+0.01); }
+  }catch(e){}
+  try{ if('speechSynthesis' in window){ const u=new SpeechSynthesisUtterance(' '); u.volume=0; speechSynthesis.speak(u); } }catch(e){}
+}
+function pickVoice(){
+  try{
+    const vs = speechSynthesis.getVoices();
+    zhVoice = vs.find(v=>/zh[-_]CN/i.test(v.lang)) || vs.find(v=>/^zh/i.test(v.lang)) || null;
+  }catch(e){}
+}
+try{ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }catch(e){}
+function say(t){
+  try{
+    if(!('speechSynthesis' in window)) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(t);
+    u.lang='zh-CN'; if(zhVoice) u.voice=zhVoice; u.rate=1.0; u.volume=1;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function beep(freq=880, dur=0.15, vol=0.35){
+  try{
+    if(!actx) return;
+    const o=actx.createOscillator(), g=actx.createGain();
+    o.type='sine'; o.frequency.value=freq; o.connect(g); g.connect(actx.destination);
+    const t=actx.currentTime; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.start(t); o.stop(t+dur+0.02);
+  }catch(e){}
+}
+const CN = ['零','一','二','三','四','五','六','七','八','九','十'];
+
+function buildPlan(s){
+  const reps = +s.dose[0][0], sets = +s.dose[s.dose.length-1][0];
+  const hold = s.pace ? 0 : +s.dose[1][0];
+  const segs = [];
+  segs.push({kind:'prep', t:'准备', sec:PREP, say:'准备'});
+  for(let st=1; st<=sets; st++){
+    for(let r=1; r<=reps; r++){
+      const info = {rep:r, reps, set:st, sets};
+      if (s.phases){
+        s.phases.forEach((ph,k)=>segs.push({kind:'work', t:ph.t, sec:ph.sec, say:(k===0?`${r}，`:'')+ph.say, ...info}));
+      } else if (s.pace){
+        segs.push({kind:'work', t:'推出 · 收回', sec:s.pace, say:`${r}`, ...info});
+      } else {
+        segs.push({kind:'work', t:'保持', sec:hold, say:`${r}，保持`, tick:true, ...info});
+        if (r<reps) segs.push({kind:'rest', t:'放松', sec:REST, say:'放松', ...info});
+      }
+    }
+    if (st<sets) segs.push({kind:'rest', t:'组间休息', sec:SET_REST, say:`第${CN[st]}组完成，休息${SET_REST}秒`, set:st, sets, setRest:true});
+  }
+  return segs;
+}
+
+const T = { plan:null, idx:0, segStart:0, paused:false, pausedLeft:0, raf:0, lastWhole:-1, done:false };
+const CIRC = 2*Math.PI*52;
+$('tmPrg').style.strokeDasharray = CIRC;
+
+function startTimer(){
+  unlockAudio(); keepAwake();
+  const s = FLOW[i];
+  $('tm').style.setProperty('--c', s.c);
+  $('tmName').textContent = s.zh;
+  $('tmSide').textContent = s.side || '';
+  T.plan = buildPlan(s); T.idx = 0; T.done=false; T.paused=false;
+  $('tm').classList.add('on');
+  setBtns('run');
+  enterSeg();
+  loop();
+}
+function enterSeg(){
+  const g = T.plan[T.idx];
+  T.segStart = performance.now(); T.lastWhole = -1;
+  $('tm').classList.toggle('rest', g.kind!=='work');
+  $('tmPhase').textContent = g.t;
+  if (g.rep) $('tmCount').innerHTML = `${g.rep} / ${g.reps}${g.sets>1?`<small>第 ${g.set}/${g.sets} 组</small>`:''}`;
+  else if (g.setRest) $('tmCount').innerHTML = `下一组：第 ${g.set+1} / ${g.sets} 组`;
+  else $('tmCount').textContent = '';
+  if (g.kind==='work') beep(1046,0.18); else if (g.kind==='rest') beep(660,0.15);
+  if (g.say) say(g.say);
+}
+function loop(){
+  cancelAnimationFrame(T.raf);
+  const tick = ()=>{
+    if (T.paused || T.done) return;
+    const g = T.plan[T.idx];
+    const el = (performance.now()-T.segStart)/1000;
+    const left = Math.max(0, g.sec - el);
+    const whole = Math.ceil(left);
+    $('tmNum').textContent = whole;
+    $('tmPrg').style.strokeDashoffset = CIRC * (1 - left/g.sec);
+    if (whole!==T.lastWhole){
+      if (T.lastWhole!==-1 && whole>0 && whole<=3){
+        if (g.kind==='prep') say(String(whole));
+        else if (g.tick || g.setRest) beep(880,0.07,0.22);
+      }
+      if (g.setRest && whole===10 && T.lastWhole!==-1) say('还有十秒');
+      T.lastWhole = whole;
+    }
+    if (left<=0){
+      T.idx++;
+      if (T.idx>=T.plan.length){ finishTimer(); return; }
+      enterSeg();
+    }
+    T.raf = requestAnimationFrame(tick);
+  };
+  T.raf = requestAnimationFrame(tick);
+}
+function pauseTimer(){
+  if (T.paused){
+    T.paused=false; T.segStart = performance.now() - (T.plan[T.idx].sec - T.pausedLeft)*1000;
+    setBtns('run'); say('继续'); loop();
+  } else {
+    T.paused=true; T.pausedLeft = Math.max(0, T.plan[T.idx].sec - (performance.now()-T.segStart)/1000);
+    cancelAnimationFrame(T.raf); try{speechSynthesis.cancel();}catch(e){}
+    setBtns('paused');
+  }
+}
+function stopTimer(){
+  cancelAnimationFrame(T.raf); T.done=true;
+  try{speechSynthesis.cancel();}catch(e){}
+  $('tm').classList.remove('on','rest');
+}
+function finishTimer(){
+  T.done=true;
+  const s = FLOW[i], nxt = FLOW[i+1];
+  $('tm').classList.remove('rest');
+  $('tmPhase').textContent = '完成！';
+  $('tmNum').textContent = '✓';
+  $('tmPrg').style.strokeDashoffset = 0;
+  let line = '完成。';
+  if (i===CORE-1 && !inOptional){ line += '基础部分全部做完了'; $('tmCount').textContent='基础部分完成'; }
+  else if (!nxt){ line += '全部做完了'; $('tmCount').textContent='全部完成'; }
+  else if (nxt.img===s.img){ line += '换另一侧'; $('tmCount').textContent='下一个：换另一侧 · '+nxt.side; }
+  else { line += '下一个，'+nxt.zh; $('tmCount').textContent='下一个：'+nxt.zh; }
+  beep(784,0.12); setTimeout(()=>beep(1046,0.22),140);
+  say(line);
+  setBtns('done');
+}
+function setBtns(mode){
+  const b = $('tmBtns');
+  if (mode==='run') b.innerHTML = '<button id="tStop">结束</button><button class="main" id="tPause">暂停</button>';
+  if (mode==='paused') b.innerHTML = '<button id="tStop">结束</button><button class="main" id="tPause">继续</button>';
+  if (mode==='done') b.innerHTML = '<button id="tAgain">再来一次</button><button class="main" id="tNext">下一步 →</button>';
+  const q = id=>document.getElementById(id);
+  if (q('tStop')) q('tStop').onclick = stopTimer;
+  if (q('tPause')) q('tPause').onclick = pauseTimer;
+  if (q('tAgain')) q('tAgain').onclick = startTimer;
+  if (q('tNext')) q('tNext').onclick = ()=>{ stopTimer(); $('next').click(); };
+}
+
 let wakeLock = null;
 async function keepAwake(){ try{ if('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); }catch(e){} }
 function release(){ try{ wakeLock && wakeLock.release(); }catch(e){} wakeLock=null; }
 
-$('go').onclick = ()=>{ i=0; inOptional=false; keepAwake(); render(); };
+$('go').onclick = ()=>{ unlockAudio(); i=0; inOptional=false; keepAwake(); render(); };
 $('next').onclick = ()=>{
   if (i===CORE-1 && !inOptional){ show('gate'); return; }
   if (i===FLOW.length-1){ release(); show('done'); return; }
   i++; render();
 };
-$('prev').onclick = ()=>{ if(i>0){ i--; if(i<CORE) inOptional=false; render(); } };
-$('quit').onclick = ()=>{ release(); show('start'); };
+$('prev').onclick = ()=>{ stopTimer(); if(i>0){ i--; if(i<CORE) inOptional=false; render(); } };
+$('quit').onclick = ()=>{ stopTimer(); release(); show('start'); };
 $('doopt').onclick = ()=>{ inOptional=true; i=CORE; render(); };
 $('skipopt').onclick = ()=>{ release(); show('done'); };
 $('gateback').onclick = ()=>{ i=CORE-1; render(); };
