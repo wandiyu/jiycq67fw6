@@ -233,6 +233,7 @@ function unlockAudio(){
   try{ const u=new SpeechSynthesisUtterance(' '); u.volume=0; speechSynthesis.speak(u); }catch(e){}
 }
 function say(t, onend){
+  speakToken++;
   try{
     speechSynthesis.cancel();
     const u=new SpeechSynthesisUtterance(t);
@@ -241,7 +242,23 @@ function say(t, onend){
     speechSynthesis.speak(u);
   }catch(e){ if(onend) onend(); }
 }
-function hush(){ try{ speechSynthesis.cancel(); }catch(e){} }
+let speakToken=0;
+function sayQueue(text, onend){
+  const token=++speakToken;
+  const parts=text.split(/(?<=[。！？])/).map(s=>s.trim()).filter(Boolean);
+  try{
+    speechSynthesis.cancel();
+    parts.forEach((t,k)=>{
+      const u=new SpeechSynthesisUtterance(t); u.lang='zh-CN'; u.rate=1.0;
+      if (k===parts.length-1){
+        u.onend=()=>{ if(token===speakToken) onend(); };
+        u.onerror=(ev)=>{ if(token===speakToken && !/interrupt|cancel/i.test(ev&&ev.error||'')) onend(); };
+      }
+      speechSynthesis.speak(u);
+    });
+  }catch(e){ onend(); }
+}
+function hush(){ speakToken++;  try{ speechSynthesis.cancel(); }catch(e){} }
 function bell(f, t0=0, d=0.5, v=0.28){
   try{ if(!actx) return; const t=actx.currentTime+t0;
     [[1,'sine',1],[2,'triangle',0.25],[3,'sine',0.08]].forEach(([m,type,a])=>{
@@ -268,7 +285,7 @@ function release(){ try{ wakeLock && wakeLock.release(); }catch(e){} wakeLock=nu
 
 /* ---------- plan ---------- */
 const REST=3, SET_REST=30, PREP=3, CN=['零','一','二','三','四','五','六','七','八','九','十'];
-function estSpeech(t){ return t.replace(/[，。、：·\s]/g,'').length*0.26 + 0.8; }
+function estSpeech(t){ return t.replace(/[，。、：·\s]/g,'').length*0.3 + 0.8; }
 
 function stepSegs(k){
   const s=FLOW[k], prev=FLOW[k-1], segs=[];
@@ -329,11 +346,18 @@ function enterSeg(resume){
   else $('tReps').textContent='';
   $('tSub').textContent = '';
   if (g.kind==='intro'){
-    P.sec = g.est + g.pos; P.segStart=performance.now(); P.speechDone=false;
-    const started = performance.now();
-    say(g.say, ()=>{ if(P.plan[P.idx]!==g || P.paused) return; P.speechDone=true;
-      P.sec = (performance.now()-P.segStart)/1000 + g.pos + 0.3; });
+    P.sec = 1e9; P.segStart=performance.now(); P.speechDone=false;
     SND.next();
+    setTimeout(()=>{ if(P.plan[P.idx]!==g || P.paused) return;
+      const spStart=(performance.now()-P.segStart)/1000;
+      sayQueue(g.say, ()=>{
+        if(P.plan[P.idx]!==g || P.paused || P.speechDone) return;
+        const el=(performance.now()-P.segStart)/1000;
+        // iOS sometimes reports "ended" too early: never accept an end before the expected speaking time
+        P.speechDone=true;
+        P.sec = Math.max(el, spStart + g.est) + 0.8;
+      });
+    }, 350);
     return;
   }
   P.sec=g.sec;
@@ -348,10 +372,8 @@ function tick(){
   let el=(performance.now()-P.segStart)/1000;
   if (g.kind==='intro' && !P.speechDone){
     // wait for speech before running the get-in-position countdown
-    if (P.sec-el < g.pos){
-      if (el > g.est + 6 || !speechSynthesis.speaking) P.speechDone=true;
-      else { P.sec = el + g.pos + 0.5; }
-    }
+    // safety net if the voice never reports an end
+    if (el > g.est*2.2 + 6){ P.speechDone=true; P.sec = el + 0.5; }
   }
   const left=Math.max(0,P.sec-el), whole=Math.ceil(left);
   if (g.kind==='intro'){
