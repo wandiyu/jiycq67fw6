@@ -263,20 +263,30 @@ function say(t, onend){
   }catch(e){ if(onend) onend(); }
 }
 let speakToken=0;
-function sayQueue(text, onend){
+/* seconds per character, learned from this phone's real voice */
+let RATE=0.25; try{ const r=parseFloat(localStorage.getItem('speechRate')); if(r>0.12&&r<0.6) RATE=r; }catch(e){}
+function nchars(t){ return t.replace(/[，。、：·！？\s]/g,'').length; }
+function learnRate(t, dur){
+  const n=nchars(t); if(n<4 || dur<0.4) return;
+  const r=dur/n; if(r<0.12||r>0.6) return;
+  RATE = RATE*0.6 + r*0.4; try{ localStorage.setItem('speechRate', RATE.toFixed(3)); }catch(e){}
+}
+function estSecs(t){ return nchars(t)*RATE + 0.4; }
+/* cb: {onLastStart(), onDone()} — parts are spoken in order; onDone when the last one really ends */
+function sayQueue(text, cb){
   const token=++speakToken;
   const parts=text.split(/(?<=[。！？])/).map(s=>s.trim()).filter(Boolean);
   try{
     speechSynthesis.cancel();
     parts.forEach((t,k)=>{
       const u=new SpeechSynthesisUtterance(t); applyVoice(u);
-      if (k===parts.length-1){
-        u.onend=()=>{ if(token===speakToken) onend(); };
-        u.onerror=(ev)=>{ if(token===speakToken && !/interrupt|cancel/i.test(ev&&ev.error||'')) onend(); };
-      }
+      let t0=0;
+      u.onstart=()=>{ if(token!==speakToken) return; t0=performance.now(); if(k===parts.length-1 && cb.onLastStart) cb.onLastStart(t); };
+      u.onend=()=>{ if(token!==speakToken) return; if(t0) learnRate(t,(performance.now()-t0)/1000); if(k===parts.length-1) cb.onDone(t0); };
+      u.onerror=(ev)=>{ if(token===speakToken && k===parts.length-1 && !/interrupt|cancel/i.test(ev&&ev.error||'')) cb.onDone(0); };
       speechSynthesis.speak(u);
     });
-  }catch(e){ onend(); }
+  }catch(e){ cb.onDone(0); }
 }
 function hush(){ speakToken++;  try{ speechSynthesis.cancel(); }catch(e){} }
 function bell(f, t0=0, d=0.5, v=0.28){
@@ -372,16 +382,25 @@ function enterSeg(resume){
   else $('tReps').textContent='';
   $('tSub').textContent = '';
   if (g.kind==='intro'){
-    P.sec = 1e9; P.segStart=performance.now(); P.speechDone=false;
+    P.sec = 1e9; P.segStart=performance.now(); P.speechDone=false; P.lastStart=null;
     SND.next();
+    const parts=g.say.split(/(?<=[。！？])/).filter(x=>x.trim());
+    const lastText=parts[parts.length-1]||g.say;
+    const now=()=>(performance.now()-P.segStart)/1000;
+    // fallback deadline until we hear from the voice: whole text at the learned rate
+    P.introDeadline = 0.35 + estSecs(g.say)*1.25 + 1.5;
     setTimeout(()=>{ if(P.plan[P.idx]!==g || P.paused) return;
-      const spStart=(performance.now()-P.segStart)/1000;
-      sayQueue(g.say, ()=>{
-        if(P.plan[P.idx]!==g || P.paused || P.speechDone) return;
-        const el=(performance.now()-P.segStart)/1000;
-        // iOS sometimes reports "ended" too early: never accept an end before the expected speaking time
-        P.speechDone=true;
-        P.sec = Math.max(el, spStart + g.est) + 0.8;
+      sayQueue(g.say, {
+        onLastStart:()=>{ if(P.plan[P.idx]!==g || P.speechDone) return;
+          P.lastStart=now(); P.introDeadline = P.lastStart + estSecs(lastText)*1.4 + 1.0; },
+        onDone:(t0)=>{
+          if(P.plan[P.idx]!==g || P.paused || P.speechDone) return;
+          const el=now();
+          // ignore an "ended" that comes impossibly early; otherwise go right away
+          const minEnd = P.lastStart!=null ? P.lastStart + estSecs(lastText)*0.5 : 0;
+          if (el < minEnd){ P.introDeadline = Math.min(P.introDeadline, P.lastStart + estSecs(lastText) + 0.4); return; }
+          P.speechDone=true; P.sec = el + 0.5;
+        }
       });
     }, 350);
     return;
@@ -398,13 +417,12 @@ function tick(){
   let el=(performance.now()-P.segStart)/1000;
   if (g.kind==='intro' && !P.speechDone){
     // wait for speech before running the get-in-position countdown
-    // safety net if the voice never reports an end
-    if (el > g.est*2.2 + 6){ P.speechDone=true; P.sec = el + 0.5; }
+    if (el > P.introDeadline){ P.speechDone=true; P.sec = el + 0.3; }
   }
   const left=Math.max(0,P.sec-el), whole=Math.ceil(left);
   if (g.kind==='intro'){
     $('tNum').textContent = '';
-    $('tPrg').style.strokeDashoffset = CIRC*(1-Math.min(1,el/Math.max(1,g.est)));
+    $('tPrg').style.strokeDashoffset = CIRC*(1-Math.min(1,el/Math.max(1,estSecs(g.say)+0.4)));
   } else {
     $('tNum').textContent = whole;
     $('tPrg').style.strokeDashoffset = CIRC*(1-Math.min(1,left/P.sec));
