@@ -14,14 +14,14 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
 <style>
-  :root{ --bg:#FFF8EF; --ink:#1E1A2E; --muted:#8A8496; --card:#FFFFFF; --c:#FF5A5F; }
+  :root{ --bg:#FFF8EF; --ink:#1E1A2E; --muted:#8A8496; --c:#FF5A5F; }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
   body{font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Noto Sans SC",sans-serif;background:var(--bg);color:var(--ink);
-    line-height:1.55;-webkit-font-smoothing:antialiased;
+    line-height:1.55;-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;
     padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left)}
   .app{max-width:520px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
-  .screen{display:none;flex:1;flex-direction:column;padding:18px 20px 0}
+  .screen{display:none;flex:1;flex-direction:column;padding:16px 20px 0}
   .screen.on{display:flex}
   h1,h2{font-weight:900;letter-spacing:.01em}
 
@@ -37,30 +37,57 @@
   .gear .opt .gi svg{stroke:#A59DB2}
   .gear .opt span{color:var(--muted)}
   .badge{position:absolute;top:-8px;right:-4px;background:var(--ink);color:#fff;font-size:11px;padding:1px 7px;border-radius:99px}
+  .s-hint{font-size:13px;color:var(--muted);text-align:center;margin-top:-30px}
 
-  /* step */
-  .topbar{display:flex;align-items:center;gap:12px;padding:2px 0 0}
-  .x{border:none;background:none;color:var(--muted);font-size:15px;padding:8px 4px;font-family:inherit;cursor:pointer}
+  /* player */
+  .topbar{display:flex;align-items:center;gap:12px}
+  .x{border:none;background:none;color:var(--muted);font-size:16px;padding:8px 4px;font-family:inherit;cursor:pointer}
   .bar{flex:1;height:8px;background:#EFE7DC;border-radius:8px;overflow:hidden}
   .bar i{display:block;height:100%;background:var(--c);border-radius:8px;transition:width .35s ease,background .35s}
   .count{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:44px;text-align:right;font-weight:500}
-  .stepwrap{flex:1;padding:16px 0 20px;animation:fade .3s ease}
-  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .pl{flex:1;display:flex;flex-direction:column;padding:12px 0 8px}
   .head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .head h2{font-size:30px;line-height:1.25}
+  .head h2{font-size:28px;line-height:1.25}
   .opt-tag{font-size:13px;font-weight:700;color:#fff;background:var(--ink);padding:2px 10px;border-radius:99px}
-  .side{margin-top:12px;display:inline-flex;align-items:center;gap:8px;background:var(--c);color:#fff;border-radius:99px;padding:8px 18px;font-size:19px;font-weight:700}
-  .photo{margin:14px 0 0;background:#fff;border-radius:24px;overflow:hidden;display:flex;justify-content:center;
-    box-shadow:0 0 0 3px var(--c)}
-  .photo img{display:block;max-width:100%;max-height:38vh;object-fit:contain}
-  .dose{display:flex;gap:8px;margin:16px 0 0}
-  .dose div{flex:1;text-align:center;background:color-mix(in srgb,var(--c) 14%,#fff);border-radius:16px;padding:10px 4px}
-  .dose b{font-size:22px;font-weight:900;color:var(--c);font-variant-numeric:tabular-nums}
-  .dose span{font-size:14px;margin-left:2px;font-weight:500}
-  ul.how{margin:18px 0 0;padding:0}
-  ul.how li{list-style:none;position:relative;padding:0 0 10px 22px;font-size:19px;font-weight:500}
+  .side{background:var(--c);color:#fff;border-radius:99px;padding:5px 14px;font-size:16px;font-weight:700}
+  .photo{margin:12px 0 0;background:#fff;border-radius:22px;overflow:hidden;display:flex;justify-content:center;box-shadow:0 0 0 3px var(--c);flex:none}
+  .photo img{display:block;max-width:100%;max-height:27vh;object-fit:contain;transition:max-height .3s}
+  .paused .photo img{max-height:34vh}
+
+  .timer{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding-top:10px}
+  .phase{font-size:34px;font-weight:900;color:var(--c);text-align:center;line-height:1.2}
+  .phase.calm{color:var(--ink)}
+  .sub{font-size:15px;color:var(--muted);min-height:1.4em;text-align:center}
+  .ring{position:relative;width:min(48vw,210px);aspect-ratio:1;margin:4px 0}
+  .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+  .ring circle{fill:none;stroke-width:12}
+  .ring .trk{stroke:#EFE7DC}
+  .ring .prg{stroke:var(--c);stroke-linecap:round}
+  .ring .num{position:absolute;inset:0;display:grid;place-items:center;font-size:72px;font-weight:900;font-variant-numeric:tabular-nums}
+  .reps{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+  .reps small{font-size:14px;color:var(--muted);font-weight:500;margin-left:8px}
+
+  .detail{display:none;padding-top:16px}
+  .paused .timer{display:none}
+  .paused .detail{display:block}
+  .dose{display:flex;gap:8px}
+  .dose div{flex:1;text-align:center;background:color-mix(in srgb,var(--c) 14%,#fff);border-radius:14px;padding:8px 4px}
+  .dose b{font-size:20px;font-weight:900;color:var(--c)}
+  .dose span{font-size:13px;margin-left:2px;font-weight:500}
+  ul.how{margin:14px 0 0;padding:0}
+  ul.how li{list-style:none;position:relative;padding:0 0 8px 22px;font-size:18px;font-weight:500}
   ul.how li::before{content:"";position:absolute;left:2px;top:.55em;width:10px;height:10px;border-radius:50%;background:var(--c)}
-  .tip{margin-top:4px;font-size:15px;color:var(--muted)}
+  .tip{font-size:14px;color:var(--muted)}
+  .pausedlabel{display:inline-block;margin-top:12px;font-size:13px;color:var(--muted)}
+
+  /* controls */
+  .ctrl{position:sticky;bottom:0;background:linear-gradient(to bottom,rgba(255,248,239,0),var(--bg) 25%);
+    padding:12px 20px calc(18px + env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:center;gap:26px}
+  .cb{width:60px;height:60px;border-radius:50%;border:none;background:#fff;box-shadow:0 0 0 2px #EFE7DC inset;display:grid;place-items:center;cursor:pointer}
+  .cb svg{width:24px;height:24px;fill:var(--ink)}
+  .cb.main{width:84px;height:84px;background:var(--c);box-shadow:0 8px 22px -8px var(--c)}
+  .cb.main svg{width:34px;height:34px;fill:#fff}
+  .cb:active{transform:scale(.95)}
 
   /* center screens */
   .center{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:14px;padding:20px 8px 30px}
@@ -70,50 +97,13 @@
   .optcards{display:flex;gap:12px;margin-top:10px}
   .optcards div{width:132px;border-radius:20px;padding:14px 10px;color:#fff;font-weight:700;font-size:16px}
   .optcards small{display:block;font-weight:500;opacity:.85;font-size:12px}
-
-  /* nav */
-  .nav{position:sticky;bottom:0;background:linear-gradient(to bottom,rgba(255,248,239,0),var(--bg) 25%);
-    padding:16px 20px calc(16px + env(safe-area-inset-bottom));display:flex;gap:10px}
+  .nav{position:sticky;bottom:0;padding:16px 20px calc(16px + env(safe-area-inset-bottom));display:flex;gap:10px}
   .btn{flex:1;border:none;border-radius:20px;padding:18px 16px;font-size:18px;font-weight:700;font-family:inherit;cursor:pointer;
-    background:var(--c);color:#fff;transition:transform .1s ease,background .35s;box-shadow:0 6px 18px -6px var(--c)}
+    background:var(--c);color:#fff;box-shadow:0 6px 18px -6px var(--c)}
   .btn:active{transform:scale(.97)}
-  .btn.ghost{background:#fff;color:var(--ink);box-shadow:0 0 0 2px #EFE7DC inset;flex:0 0 auto;padding:18px 22px}
-  .btn.ghost[disabled]{opacity:.35}
+  .btn.ghost{background:#fff;color:var(--ink);box-shadow:0 0 0 2px #EFE7DC inset}
   .stack{flex-direction:column}
-  .stack .btn.ghost{flex:1}
   #start .btn{background:linear-gradient(90deg,#FF5A5F,#FF8A00);box-shadow:0 8px 22px -8px #FF5A5F}
-
-  /* timer button */
-  .tbtn{margin-top:16px;width:100%;border:none;border-radius:20px;padding:16px;font-family:inherit;font-size:19px;font-weight:700;
-    color:var(--c);background:#fff;box-shadow:0 0 0 3px var(--c) inset;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer}
-  .tbtn svg{width:22px;height:22px;fill:var(--c)}
-  .tbtn:active{transform:scale(.98)}
-  /* timer overlay */
-  .tm{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:space-between;
-    background:var(--c);color:#fff;padding:calc(24px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom));transition:background .3s}
-  .tm.on{display:flex}
-  .tm.rest{background:#fff;color:var(--ink)}
-  .tm-top{text-align:center}
-  .tm-name{font-size:18px;font-weight:700;opacity:.85}
-  .tm-side{font-size:15px;opacity:.75;margin-top:2px}
-  .tm-mid{display:flex;flex-direction:column;align-items:center;gap:18px}
-  .tm-phase{font-size:40px;font-weight:900;text-align:center;line-height:1.2;min-height:1.2em}
-  .ring{position:relative;width:min(68vw,300px);aspect-ratio:1}
-  .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
-  .ring circle{fill:none;stroke-width:14}
-  .ring .trk{stroke:rgba(255,255,255,.28)}
-  .ring .prg{stroke:#fff;stroke-linecap:round;transition:stroke-dashoffset .12s linear}
-  .tm.rest .ring .trk{stroke:#EFE7DC} .tm.rest .ring .prg{stroke:var(--c)}
-  .ring .num{position:absolute;inset:0;display:grid;place-items:center;font-size:96px;font-weight:900;font-variant-numeric:tabular-nums}
-  .tm-count{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
-  .tm-count small{font-size:15px;opacity:.75;font-weight:500;margin-left:8px}
-  .tm-btns{display:flex;gap:12px;width:100%;max-width:440px}
-  .tm-btns button{flex:1;border:none;border-radius:20px;padding:18px;font-family:inherit;font-size:18px;font-weight:700;cursor:pointer;
-    background:rgba(255,255,255,.22);color:#fff}
-  .tm-btns button.main{background:#fff;color:var(--c)}
-  .tm.rest .tm-btns button{background:#F3EDE4;color:var(--ink)}
-  .tm.rest .tm-btns button.main{background:var(--c);color:#fff}
-  .tm-hint{font-size:13px;opacity:.7;text-align:center;margin-top:-6px}
 </style>
 </head>
 <body>
@@ -129,19 +119,36 @@
         <div class="opt"><span class="badge">可选</span><div class="gi"><svg viewBox="0 0 48 48"><path d="M12 6v36"/><path d="M12 18h14a6 6 0 0 1 0 12H12"/><circle cx="36" cy="24" r="3"/></svg></div><span>固定点</span></div>
       </div>
     </div>
+    <div class="s-hint">🔈 关掉静音键</div>
     <div class="nav"><button class="btn" id="go">开始</button></div>
   </section>
 
-  <section class="screen" id="step">
+  <section class="screen" id="player">
     <div class="topbar">
       <button class="x" id="quit">✕</button>
       <div class="bar"><i id="barfill"></i></div>
       <div class="count" id="count"></div>
     </div>
-    <div class="stepwrap" id="stepbody"></div>
-    <div class="nav">
-      <button class="btn ghost" id="prev">←</button>
-      <button class="btn" id="next">下一步</button>
+    <div class="pl" id="pl">
+      <div class="head"><h2 id="pName"></h2><span class="opt-tag" id="pOpt" hidden>可选</span><span class="side" id="pSide" hidden></span></div>
+      <figure class="photo"><img id="pImg" alt=""></figure>
+      <div class="timer">
+        <div class="phase" id="tPhase"></div>
+        <div class="ring"><svg viewBox="0 0 120 120"><circle class="trk" cx="60" cy="60" r="52"/><circle class="prg" id="tPrg" cx="60" cy="60" r="52"/></svg><div class="num" id="tNum"></div></div>
+        <div class="reps" id="tReps"></div>
+        <div class="sub" id="tSub"></div>
+      </div>
+      <div class="detail">
+        <div class="dose" id="pDose"></div>
+        <ul class="how" id="pHow"></ul>
+        <div class="tip" id="pTip"></div>
+        <span class="pausedlabel">已暂停 · 点 ▶ 继续</span>
+      </div>
+    </div>
+    <div class="ctrl">
+      <button class="cb" id="bPrev" aria-label="上一个"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+      <button class="cb main" id="bPlay" aria-label="暂停"><svg viewBox="0 0 24 24" id="playIcon"></svg></button>
+      <button class="cb" id="bNext" aria-label="下一个"><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
     </div>
   </section>
 
@@ -157,7 +164,6 @@
     <div class="nav stack">
       <button class="btn" id="doopt" style="--c:#8338EC">继续可选动作</button>
       <button class="btn ghost" id="skipopt">今天就到这里</button>
-      <button class="x" id="gateback" style="align-self:center">← 上一步</button>
     </div>
   </section>
 
@@ -168,19 +174,6 @@
     </div>
     <div class="nav"><button class="btn" id="restart" style="--c:#06D6A0">回到开始</button></div>
   </section>
-
-  <div class="tm" id="tm">
-    <div class="tm-top"><div class="tm-name" id="tmName"></div><div class="tm-side" id="tmSide"></div></div>
-    <div class="tm-mid">
-      <div class="tm-phase" id="tmPhase"></div>
-      <div class="ring"><svg viewBox="0 0 120 120"><circle class="trk" cx="60" cy="60" r="52"/><circle class="prg" id="tmPrg" cx="60" cy="60" r="52"/></svg><div class="num" id="tmNum"></div></div>
-      <div class="tm-count" id="tmCount"></div>
-    </div>
-    <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px">
-      <div class="tm-btns" id="tmBtns"></div>
-      <div class="tm-hint" id="tmHint">听不到声音？关掉手机侧面的静音键</div>
-    </div>
-  </div>
 
 </div>
 
@@ -220,222 +213,210 @@ const STEPS = [
 const FLOW = [];
 STEPS.forEach((s,k)=>{
   s.img = k;
-  if (s.split) s.split.forEach(lab=>FLOW.push({...s, side:lab}));
-  else FLOW.push(s);
+  if (s.split) s.split.forEach((lab,j)=>FLOW.push({...s, side:lab, sideNo:j}));
+  else FLOW.push({...s, sideNo:0});
 });
 const CORE = FLOW.filter(s=>!s.optional).length;
-let i = 0, inOptional = false;
 
 const $ = id => document.getElementById(id);
-function show(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on', s.id===id));
-  window.scrollTo(0,0);
-}
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on', s.id===id)); window.scrollTo(0,0); }
 
-function render(){
-  const s = FLOW[i];
-  const total = inOptional ? FLOW.length : CORE;
-  $('step').style.setProperty('--c', s.c);
-  $('count').textContent = `${i+1}/${total}`;
-  $('barfill').style.width = ((i+1)/total*100) + '%';
-  $('stepbody').innerHTML = `
-    <div class="head"><h2>${s.zh}</h2>${s.optional?'<span class="opt-tag">可选</span>':''}</div>
-    ${s.side?`<div class="side">${s.side}</div>`:''}
-    <figure class="photo"><img src="${IMGS[s.img]}" alt="${s.zh}"></figure>
-    <div class="dose">${s.dose.map(d=>`<div><b>${d[0]}</b><span>${d[1]}</span></div>`).join('')}</div>
-    <button class="tbtn" id="tbtn"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg>开始计时</button>
-    <ul class="how">${s.how.map(h=>`<li>${h}</li>`).join('')}</ul>
-    ${s.tip?`<div class="tip">${s.tip}</div>`:''}
-  `;
-  $('tbtn').onclick = startTimer;
-  const b = $('stepbody'); b.style.animation='none'; b.offsetHeight; b.style.animation='';
-  $('prev').disabled = (i===0);
-  $('next').textContent = (i===FLOW.length-1 || (i===CORE-1 && !inOptional)) ? '完成' : '下一步';
-  show('step');
-}
-
-
-/* ===== timer + voice ===== */
-const REST = 3, SET_REST = 30, PREP = 3;
-let actx = null, zhVoice = null;
+/* ---------- audio ---------- */
+let actx=null, zhVoice=null;
 function unlockAudio(){
   try{
-    if(!actx){ const C = window.AudioContext||window.webkitAudioContext; if(C) actx = new C(); }
+    if(!actx){ const C=window.AudioContext||window.webkitAudioContext; if(C) actx=new C(); }
     if(actx && actx.state==='suspended') actx.resume();
     if(actx){ const o=actx.createOscillator(), g=actx.createGain(); g.gain.value=0; o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime+0.01); }
   }catch(e){}
-  try{ if('speechSynthesis' in window){ const u=new SpeechSynthesisUtterance(' '); u.volume=0; speechSynthesis.speak(u); } }catch(e){}
+  try{ const u=new SpeechSynthesisUtterance(' '); u.volume=0; speechSynthesis.speak(u); }catch(e){}
 }
-function pickVoice(){
+function pickVoice(){ try{ const vs=speechSynthesis.getVoices(); zhVoice=vs.find(v=>/zh[-_]CN/i.test(v.lang))||vs.find(v=>/^zh/i.test(v.lang))||null; }catch(e){} }
+try{ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; }catch(e){}
+function say(t, onend){
   try{
-    const vs = speechSynthesis.getVoices();
-    zhVoice = vs.find(v=>/zh[-_]CN/i.test(v.lang)) || vs.find(v=>/^zh/i.test(v.lang)) || null;
-  }catch(e){}
-}
-try{ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }catch(e){}
-function say(t){
-  try{
-    if(!('speechSynthesis' in window)) return;
     speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(t);
-    u.lang='zh-CN'; if(zhVoice) u.voice=zhVoice; u.rate=1.0; u.volume=1;
+    const u=new SpeechSynthesisUtterance(t);
+    u.lang='zh-CN'; if(zhVoice) u.voice=zhVoice; u.rate=1.0;
+    if(onend){ u.onend=onend; u.onerror=onend; }
     speechSynthesis.speak(u);
+  }catch(e){ if(onend) onend(); }
+}
+function hush(){ try{ speechSynthesis.cancel(); }catch(e){} }
+function beep(f=880,d=0.15,v=0.35){
+  try{ if(!actx) return; const o=actx.createOscillator(), g=actx.createGain(); o.type='sine'; o.frequency.value=f; o.connect(g); g.connect(actx.destination);
+    const t=actx.currentTime; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+d); o.start(t); o.stop(t+d+0.02);
   }catch(e){}
 }
-function beep(freq=880, dur=0.15, vol=0.35){
-  try{
-    if(!actx) return;
-    const o=actx.createOscillator(), g=actx.createGain();
-    o.type='sine'; o.frequency.value=freq; o.connect(g); g.connect(actx.destination);
-    const t=actx.currentTime; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
-    o.start(t); o.stop(t+dur+0.02);
-  }catch(e){}
-}
-const CN = ['零','一','二','三','四','五','六','七','八','九','十'];
+let wakeLock=null;
+async function keepAwake(){ try{ if('wakeLock' in navigator && !wakeLock){ wakeLock=await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release',()=>wakeLock=null); } }catch(e){} }
+function release(){ try{ wakeLock && wakeLock.release(); }catch(e){} wakeLock=null; }
 
-function buildPlan(s){
-  const reps = +s.dose[0][0], sets = +s.dose[s.dose.length-1][0];
-  const hold = s.pace ? 0 : +s.dose[1][0];
-  const segs = [];
-  segs.push({kind:'prep', t:'准备', sec:PREP, say:'准备'});
+/* ---------- plan ---------- */
+const REST=3, SET_REST=30, PREP=3, CN=['零','一','二','三','四','五','六','七','八','九','十'];
+function estSpeech(t){ return t.replace(/[，。、：·\s]/g,'').length*0.26 + 0.8; }
+
+function stepSegs(k){
+  const s=FLOW[k], prev=FLOW[k-1], segs=[];
+  const reps=+s.dose[0][0], sets=+s.dose[s.dose.length-1][0], hold=s.pace?0:+s.dose[1][0];
+  // intro
+  let text, pos;
+  if (s.sideNo===1){ text=`换另一侧，${s.side}`; pos=6; }
+  else {
+    text = (k===0?'开始。':'下一个，') + s.zh + '。' + (s.side? s.side+'。':'') + s.how.join('，') + '。';
+    pos = (!prev || prev.pose!==s.pose || s.optional) ? 10 : 6;
+  }
+  text = text.replace(/\s*\+\s*/g,'和').replace(/°/g,'度').replace(/：/g,'，').replace(/\s+/g,'');
+  segs.push({step:k, kind:'intro', t:s.sideNo===1?'换另一侧':'摆好姿势', say:text, est:estSpeech(text), pos});
+  segs.push({step:k, kind:'prep', t:'准备', sec:PREP, say:'准备'});
   for(let st=1; st<=sets; st++){
     for(let r=1; r<=reps; r++){
-      const info = {rep:r, reps, set:st, sets};
-      if (s.phases){
-        s.phases.forEach((ph,k)=>segs.push({kind:'work', t:ph.t, sec:ph.sec, say:(k===0?`${r}，`:'')+ph.say, ...info}));
-      } else if (s.pace){
-        segs.push({kind:'work', t:'推出 · 收回', sec:s.pace, say:`${r}`, ...info});
-      } else {
-        segs.push({kind:'work', t:'保持', sec:hold, say:`${r}，保持`, tick:true, ...info});
-        if (r<reps) segs.push({kind:'rest', t:'放松', sec:REST, say:'放松', ...info});
+      const info={rep:r, reps, set:st, sets};
+      if (s.phases) s.phases.forEach((ph,j)=>segs.push({step:k, kind:'work', t:ph.t, sec:ph.sec, say:(j===0?`${r}，`:'')+ph.say, ...info}));
+      else if (s.pace) segs.push({step:k, kind:'work', t:'推出 · 收回', sec:s.pace, say:`${r}`, ...info});
+      else {
+        segs.push({step:k, kind:'work', t:'保持', sec:hold, say:`${r}，保持`, tick:true, ...info});
+        if (r<reps) segs.push({step:k, kind:'rest', t:'放松', sec:REST, say:'放松', ...info});
       }
     }
-    if (st<sets) segs.push({kind:'rest', t:'组间休息', sec:SET_REST, say:`第${CN[st]}组完成，休息${SET_REST}秒`, set:st, sets, setRest:true});
+    if (st<sets) segs.push({step:k, kind:'rest', t:'组间休息', sec:SET_REST, say:`第${CN[st]}组完成，休息${SET_REST}秒`, set:st, sets, setRest:true});
   }
   return segs;
 }
+function buildPlan(from, to){ let p=[]; for(let k=from;k<to;k++) p=p.concat(stepSegs(k)); return p; }
 
-const T = { plan:null, idx:0, segStart:0, paused:false, pausedLeft:0, raf:0, lastWhole:-1, done:false };
-const CIRC = 2*Math.PI*52;
-$('tmPrg').style.strokeDasharray = CIRC;
+/* ---------- engine ---------- */
+const P={ plan:[], idx:0, segStart:0, sec:0, paused:false, left:0, raf:0, lastWhole:-1, speechDone:true, curStep:-1, inOptional:false, running:false };
+const CIRC=2*Math.PI*52; $('tPrg').style.strokeDasharray=CIRC;
+const ICON_PAUSE='<path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/>', ICON_PLAY='<path d="M8 5v14l11-7z"/>';
 
-function startTimer(){
-  unlockAudio(); keepAwake();
-  const s = FLOW[i];
-  $('tm').style.setProperty('--c', s.c);
-  $('tmName').textContent = s.zh;
-  $('tmSide').textContent = s.side || '';
-  T.plan = buildPlan(s); T.idx = 0; T.done=false; T.paused=false;
-  $('tm').classList.add('on');
-  setBtns('run');
-  enterSeg();
-  loop();
+function renderStep(k){
+  const s=FLOW[k]; P.curStep=k;
+  $('player').style.setProperty('--c', s.c);
+  const total = P.inOptional ? FLOW.length : CORE;
+  $('count').textContent=`${k+1}/${total}`;
+  $('barfill').style.width=((k+1)/total*100)+'%';
+  $('pName').textContent=s.zh;
+  $('pOpt').hidden=!s.optional;
+  $('pSide').hidden=!s.side; $('pSide').textContent=s.side||'';
+  $('pImg').src=IMGS[s.img]; $('pImg').alt=s.zh;
+  $('pDose').innerHTML=s.dose.map(d=>`<div><b>${d[0]}</b><span>${d[1]}</span></div>`).join('');
+  $('pHow').innerHTML=s.how.map(h=>`<li>${h}</li>`).join('');
+  $('pTip').textContent=s.tip||'';
 }
-function enterSeg(){
-  const g = T.plan[T.idx];
-  T.segStart = performance.now(); T.lastWhole = -1;
-  $('tm').classList.toggle('rest', g.kind!=='work');
-  $('tmPhase').textContent = g.t;
-  if (g.rep) $('tmCount').innerHTML = `${g.rep} / ${g.reps}${g.sets>1?`<small>第 ${g.set}/${g.sets} 组</small>`:''}`;
-  else if (g.setRest) $('tmCount').innerHTML = `下一组：第 ${g.set+1} / ${g.sets} 组`;
-  else $('tmCount').textContent = '';
+function enterSeg(resume){
+  const g=P.plan[P.idx];
+  if (g.step!==P.curStep) renderStep(g.step);
+  P.lastWhole=-1;
+  $('tPhase').textContent=g.t;
+  $('tPhase').classList.toggle('calm', g.kind!=='work');
+  if (g.rep) $('tReps').innerHTML=`${g.rep} / ${g.reps}${g.sets>1?`<small>第 ${g.set}/${g.sets} 组</small>`:''}`;
+  else if (g.setRest) $('tReps').textContent=`下一组：${g.set+1} / ${g.sets}`;
+  else $('tReps').textContent='';
+  $('tSub').textContent = g.kind==='intro' ? '听语音讲解，摆好姿势' : '';
+  if (g.kind==='intro'){
+    P.sec = g.est + g.pos; P.segStart=performance.now(); P.speechDone=false;
+    const started = performance.now();
+    say(g.say, ()=>{ if(P.plan[P.idx]!==g || P.paused) return; P.speechDone=true;
+      const el=(performance.now()-P.segStart)/1000; if (P.sec-el > g.pos) P.segStart = performance.now() - (P.sec-g.pos)*1000; });
+    beep(523,0.12); setTimeout(()=>beep(784,0.14),130);
+    return;
+  }
+  P.sec=g.sec;
+  P.segStart = resume ? performance.now()-(g.sec-P.left)*1000 : performance.now();
+  if (resume){ say('继续'); return; }
   if (g.kind==='work') beep(1046,0.18); else if (g.kind==='rest') beep(660,0.15);
   if (g.say) say(g.say);
 }
-function loop(){
-  cancelAnimationFrame(T.raf);
-  const tick = ()=>{
-    if (T.paused || T.done) return;
-    const g = T.plan[T.idx];
-    const el = (performance.now()-T.segStart)/1000;
-    const left = Math.max(0, g.sec - el);
-    const whole = Math.ceil(left);
-    $('tmNum').textContent = whole;
-    $('tmPrg').style.strokeDashoffset = CIRC * (1 - left/g.sec);
-    if (whole!==T.lastWhole){
-      if (T.lastWhole!==-1 && whole>0 && whole<=3){
-        if (g.kind==='prep') say(String(whole));
-        else if (g.tick || g.setRest) beep(880,0.07,0.22);
-      }
-      if (g.setRest && whole===10 && T.lastWhole!==-1) say('还有十秒');
-      T.lastWhole = whole;
+function tick(){
+  if (!P.running || P.paused) return;
+  const g=P.plan[P.idx];
+  let el=(performance.now()-P.segStart)/1000;
+  if (g.kind==='intro' && !P.speechDone){
+    // wait for speech before running the get-in-position countdown
+    if (P.sec-el < g.pos){
+      if (el > g.est + 6 || !speechSynthesis.speaking) P.speechDone=true;
+      else { P.segStart = performance.now()-(P.sec-g.pos)*1000; el=P.sec-g.pos; }
     }
-    if (left<=0){
-      T.idx++;
-      if (T.idx>=T.plan.length){ finishTimer(); return; }
-      enterSeg();
-    }
-    T.raf = requestAnimationFrame(tick);
-  };
-  T.raf = requestAnimationFrame(tick);
-}
-function pauseTimer(){
-  if (T.paused){
-    T.paused=false; T.segStart = performance.now() - (T.plan[T.idx].sec - T.pausedLeft)*1000;
-    setBtns('run'); say('继续'); loop();
-  } else {
-    T.paused=true; T.pausedLeft = Math.max(0, T.plan[T.idx].sec - (performance.now()-T.segStart)/1000);
-    cancelAnimationFrame(T.raf); try{speechSynthesis.cancel();}catch(e){}
-    setBtns('paused');
   }
+  const left=Math.max(0,P.sec-el), whole=Math.ceil(left);
+  const shownMax = g.kind==='intro' ? g.pos : P.sec;
+  $('tNum').textContent = Math.min(whole, Math.ceil(shownMax));
+  $('tPrg').style.strokeDashoffset = CIRC*(1-Math.min(1,left/shownMax));
+  if (whole!==P.lastWhole){
+    if (P.lastWhole!==-1 && whole>0 && whole<=3){
+      if (g.kind==='prep') say(String(whole));
+      else if (g.tick || g.setRest || (g.kind==='intro' && P.speechDone)) beep(880,0.07,0.22);
+    }
+    if (g.setRest && whole===10 && P.lastWhole!==-1) say('还有十秒');
+    P.lastWhole=whole;
+  }
+  if (left<=0){ next(); if(!P.running) return; }
+  P.raf=requestAnimationFrame(tick);
 }
-function stopTimer(){
-  cancelAnimationFrame(T.raf); T.done=true;
-  try{speechSynthesis.cancel();}catch(e){}
-  $('tm').classList.remove('on','rest');
+function next(){
+  const cur=P.plan[P.idx]; P.idx++;
+  if (P.idx>=P.plan.length){ endOfPlan(); return; }
+  if (P.plan[P.idx].step!==cur.step) beep(784,0.1);
+  enterSeg(false);
 }
-function finishTimer(){
-  T.done=true;
-  const s = FLOW[i], nxt = FLOW[i+1];
-  $('tm').classList.remove('rest');
-  $('tmPhase').textContent = '完成！';
-  $('tmNum').textContent = '✓';
-  $('tmPrg').style.strokeDashoffset = 0;
-  let line = '完成。';
-  if (i===CORE-1 && !inOptional){ line += '基础部分全部做完了'; $('tmCount').textContent='基础部分完成'; }
-  else if (!nxt){ line += '全部做完了'; $('tmCount').textContent='全部完成'; }
-  else if (nxt.img===s.img){ line += '换另一侧'; $('tmCount').textContent='下一个：换另一侧 · '+nxt.side; }
-  else { line += '下一个，'+nxt.zh; $('tmCount').textContent='下一个：'+nxt.zh; }
-  beep(784,0.12); setTimeout(()=>beep(1046,0.22),140);
-  say(line);
-  setBtns('done');
+function endOfPlan(){
+  P.running=false; cancelAnimationFrame(P.raf);
+  if (!P.inOptional){ show('gate'); say('基础动作全部完成。要做可选动作，就点继续。'); beep(784,0.12); setTimeout(()=>beep(1046,0.22),140); }
+  else finish();
 }
-function setBtns(mode){
-  const b = $('tmBtns');
-  if (mode==='run') b.innerHTML = '<button id="tStop">结束</button><button class="main" id="tPause">暂停</button>';
-  if (mode==='paused') b.innerHTML = '<button id="tStop">结束</button><button class="main" id="tPause">继续</button>';
-  if (mode==='done') b.innerHTML = '<button id="tAgain">再来一次</button><button class="main" id="tNext">下一步 →</button>';
-  const q = id=>document.getElementById(id);
-  if (q('tStop')) q('tStop').onclick = stopTimer;
-  if (q('tPause')) q('tPause').onclick = pauseTimer;
-  if (q('tAgain')) q('tAgain').onclick = startTimer;
-  if (q('tNext')) q('tNext').onclick = ()=>{ stopTimer(); $('next').click(); };
+function finish(){
+  P.running=false; cancelAnimationFrame(P.raf); release();
+  show('done'); say('全部完成，辛苦了！'); beep(784,0.12); setTimeout(()=>beep(1046,0.22),140); setTimeout(()=>beep(1318,0.3),300);
+}
+function run(){ P.running=true; P.paused=false; setPlayIcon(); cancelAnimationFrame(P.raf); P.raf=requestAnimationFrame(tick); }
+function pause(){
+  if (!P.running) return;
+  P.paused=true; cancelAnimationFrame(P.raf); hush();
+  P.left=Math.max(0,P.sec-(performance.now()-P.segStart)/1000);
+  $('pl').classList.add('paused'); setPlayIcon();
+}
+function resume(){
+  $('pl').classList.remove('paused'); P.paused=false; keepAwake();
+  const g=P.plan[P.idx];
+  enterSeg(g.kind!=='intro');   // intro restarts (re-reads the instructions)
+  run();
+}
+function setPlayIcon(){ $('playIcon').innerHTML = P.paused ? ICON_PLAY : ICON_PAUSE; $('bPlay').setAttribute('aria-label', P.paused?'继续':'暂停'); }
+function jumpToStep(k){
+  const j=P.plan.findIndex(g=>g.step===k);
+  if (j<0) return;
+  P.idx=j; $('pl').classList.remove('paused'); P.paused=false; enterSeg(false); run();
+}
+function startFrom(from, to){
+  P.plan=buildPlan(from,to); P.idx=0; P.curStep=-1;
+  show('player'); $('pl').classList.remove('paused');
+  enterSeg(false); run();
 }
 
-let wakeLock = null;
-async function keepAwake(){ try{ if('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); }catch(e){} }
-function release(){ try{ wakeLock && wakeLock.release(); }catch(e){} wakeLock=null; }
-
-$('go').onclick = ()=>{ unlockAudio(); i=0; inOptional=false; keepAwake(); render(); };
-$('next').onclick = ()=>{
-  if (i===CORE-1 && !inOptional){ show('gate'); return; }
-  if (i===FLOW.length-1){ release(); show('done'); return; }
-  i++; render();
+/* ---------- buttons ---------- */
+$('go').onclick=()=>{ unlockAudio(); keepAwake(); P.inOptional=false; startFrom(0,CORE); };
+$('bPlay').onclick=()=>{ unlockAudio(); P.paused?resume():pause(); };
+$('bNext').onclick=()=>{
+  const k=P.curStep;
+  if (k+1 < (P.inOptional?FLOW.length:CORE)) jumpToStep(k+1);
+  else { P.idx=P.plan.length-1; hush(); endOfPlan(); }
 };
-$('prev').onclick = ()=>{ stopTimer(); if(i>0){ i--; if(i<CORE) inOptional=false; render(); } };
-$('quit').onclick = ()=>{ stopTimer(); release(); show('start'); };
-$('doopt').onclick = ()=>{ inOptional=true; i=CORE; render(); };
-$('skipopt').onclick = ()=>{ release(); show('done'); };
-$('gateback').onclick = ()=>{ i=CORE-1; render(); };
-$('restart').onclick = ()=> show('start');
+$('bPrev').onclick=()=>{
+  const g=P.plan[P.idx], first=P.plan.findIndex(x=>x.step===g.step);
+  const startedLongAgo = P.idx-first>2;
+  const target = startedLongAgo ? g.step : g.step-1;
+  if (P.plan.some(x=>x.step===target)) jumpToStep(target); else jumpToStep(g.step);
+};
+$('quit').onclick=()=>{ P.running=false; cancelAnimationFrame(P.raf); hush(); release(); show('start'); };
+$('doopt').onclick=()=>{ unlockAudio(); keepAwake(); P.inOptional=true; startFrom(CORE, FLOW.length); };
+$('skipopt').onclick=()=>finish();
+$('restart').onclick=()=>show('start');
+$('pImg').onclick=()=>{ if(P.running && !P.paused) pause(); };
 
-document.addEventListener('visibilitychange', ()=>{
-  if (document.visibilityState==='visible' && $('step').classList.contains('on')) keepAwake();
-});
-document.addEventListener('keydown', e=>{
-  if (!$('step').classList.contains('on')) return;
-  if (e.key==='ArrowRight') $('next').click();
-  if (e.key==='ArrowLeft') $('prev').click();
+document.addEventListener('visibilitychange',()=>{
+  if (document.visibilityState==='hidden' && P.running && !P.paused) pause();
+  if (document.visibilityState==='visible' && P.running) keepAwake();
 });
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
