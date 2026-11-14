@@ -113,6 +113,12 @@
   .seg button{border:none;background:none;font-family:inherit;font-size:16px;font-weight:700;color:var(--muted);padding:10px 22px;border-radius:99px;cursor:pointer;transition:background .2s,color .2s}
   .seg button.on{background:linear-gradient(90deg,#8338EC,#3A86FF);color:#fff}
   .s-hint{margin-top:12px!important}
+
+  .nav.two{gap:12px}
+  .nav.two .btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:14px 10px}
+  .nav.two .btn b{font-size:19px}
+  .nav.two .btn small{font-size:12px;font-weight:500;opacity:.85}
+  #start .btn.relaxbtn{background:linear-gradient(90deg,#14B8A6,#8B5CF6);box-shadow:0 8px 22px -8px #14B8A6}
 </style>
 </head>
 <body>
@@ -135,7 +141,10 @@
       </div>
     </div>
     <div class="s-hint">关掉静音键才能听到声音</div>
-    <div class="nav"><button class="btn" id="go">开始</button></div>
+    <div class="nav two">
+      <button class="btn" id="go"><b>核心运动</b><small>10 个动作 · 可选加练</small></button>
+      <button class="btn relaxbtn" id="goRelax"><b>舒缓拉伸</b><small>开书 · 猫牛 · 3 个拉伸</small></button>
+    </div>
   </section>
 
   <section class="screen" id="player">
@@ -266,7 +275,9 @@ STEPS.forEach((s,k)=>{
 });
 const CORE = FLOW.filter(s=>!s.optional && !s.stretch).length;
 const OPT_END = FLOW.filter(s=>!s.stretch).length;
-const STAGES = { core:[0,CORE], opt:[CORE,OPT_END], stretch:[OPT_END,FLOW.length] };
+const rng=(a,b)=>Array.from({length:b-a},(_,i)=>a+i);
+const STAGES = { core:rng(0,CORE), opt:rng(CORE,OPT_END), stretch:rng(OPT_END,FLOW.length),
+  relax: FLOW.map((s,i)=>i).filter(i=>['开书式','猫牛式'].includes(FLOW[i].zh)).concat(rng(OPT_END,FLOW.length)) };
 
 const $ = id => document.getElementById(id);
 function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on', s.id===id)); window.scrollTo(0,0); }
@@ -352,7 +363,7 @@ function release(){ try{ wakeLock && wakeLock.release(); }catch(e){} wakeLock=nu
 const REST=3, SET_REST=30, PREP=3, CN=['零','一','二','三','四','五','六','七','八','九','十'];
 function estSpeech(t){ return t.replace(/[，。、：·\s]/g,'').length*0.3 + 0.8; }
 
-function stepSegs(k){
+function stepSegs(k, first){
   const s=FLOW[k], prev=FLOW[k-1], segs=[];
   const reps=+s.dose[0][0], sets=+s.dose[s.dose.length-1][0], hold=s.pace||s.stretch?0:+(s.dose[1]||[0])[0];
   // intro
@@ -360,7 +371,7 @@ function stepSegs(k){
   if (s.sideNo===1){ text=`换另一侧，${s.side}`; pos=0; }
   else {
     const cues = GUIDE==='detail' ? (s.detail||s.how) : GUIDE==='simple' ? s.how : [];
-    text = (k===0?'开始。':'下一个，') + s.zh + '。' + (s.side? s.side+'。':'') + (cues.length? cues.join('。')+'。' : '');
+    text = (first?'开始。':'下一个，') + s.zh + '。' + (s.side? s.side+'。':'') + (cues.length? cues.join('。')+'。' : '');
     pos = 0;
   }
   text = text.replace(/\s*\+\s*/g,'和').replace(/°/g,'度').replace(/：/g,'，').replace(/；/g,'。').replace(/\s+/g,'');
@@ -393,7 +404,7 @@ function stepSegs(k){
   }
   return segs;
 }
-function buildPlan(from, to){ let p=[]; for(let k=from;k<to;k++) p=p.concat(stepSegs(k)); return p; }
+function buildPlan(list){ let p=[]; list.forEach((k,i)=>{ p=p.concat(stepSegs(k, i===0)); }); return p; }
 
 /* ---------- engine ---------- */
 const P={ plan:[], idx:0, segStart:0, sec:0, paused:false, left:0, raf:0, lastWhole:-1, speechDone:true, curStep:-1, stage:'core', running:false };
@@ -403,7 +414,7 @@ const ICON_PAUSE='<path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/>', ICON_PLAY='<pa
 function renderStep(k){
   const s=FLOW[k]; P.curStep=k;
   $('player').style.setProperty('--c', s.c);
-  const [a,b]=STAGES[P.stage], total=b-a, pos=k-a+1;
+  const L=STAGES[P.stage], total=L.length, pos=L.indexOf(k)+1;
   $('count').textContent=`${pos}/${total}`;
   $('barfill').style.width=(pos/total*100)+'%';
   $('pName').textContent=s.zh;
@@ -493,7 +504,7 @@ function endOfPlan(){
   else if (P.stage==='opt'){ show('gate2'); say('可选动作完成。要放松拉伸吗？'); SND.done(); }
   else finish();
 }
-function startStage(st){ unlockAudio(); keepAwake(); P.stage=st; const [a,b]=STAGES[st]; startFrom(a,b); }
+function startStage(st){ unlockAudio(); keepAwake(); P.stage=st; startFrom(STAGES[st]); }
 function finish(){
   P.running=false; cancelAnimationFrame(P.raf); release();
   show('done'); say('全部完成，辛苦了！'); SND.done();
@@ -517,25 +528,27 @@ function jumpToStep(k){
   if (j<0) return;
   P.idx=j; $('pl').classList.remove('paused'); P.paused=false; enterSeg(false); run();
 }
-function startFrom(from, to){
-  P.plan=buildPlan(from,to); P.idx=0; P.curStep=-1;
+function startFrom(list){
+  P.plan=buildPlan(list); P.idx=0; P.curStep=-1;
   show('player'); $('pl').classList.remove('paused');
   enterSeg(false); run();
 }
 
 /* ---------- buttons ---------- */
 $('go').onclick=()=>startStage('core');
+$('goRelax').onclick=()=>startStage('relax');
 $('bPlay').onclick=()=>{ unlockAudio(); P.paused?resume():pause(); };
 $('bNext').onclick=()=>{
-  const k=P.curStep;
-  if (k+1 < STAGES[P.stage][1]) jumpToStep(k+1);
+  const L=STAGES[P.stage], i=L.indexOf(P.curStep);
+  if (i+1 < L.length) jumpToStep(L[i+1]);
   else { P.idx=P.plan.length-1; hush(); endOfPlan(); }
 };
 $('bPrev').onclick=()=>{
   const g=P.plan[P.idx], first=P.plan.findIndex(x=>x.step===g.step);
   const startedLongAgo = P.idx-first>2;
-  const target = startedLongAgo ? g.step : g.step-1;
-  if (P.plan.some(x=>x.step===target)) jumpToStep(target); else jumpToStep(g.step);
+  const L=STAGES[P.stage], i=L.indexOf(g.step);
+  const target = startedLongAgo || i===0 ? g.step : L[i-1];
+  jumpToStep(target);
 };
 $('quit').onclick=()=>{ P.running=false; cancelAnimationFrame(P.raf); hush(); release(); show('start'); };
 $('doopt').onclick=()=>startStage('opt');
