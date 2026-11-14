@@ -95,7 +95,7 @@
   .big svg{width:54px;height:54px;stroke:#fff;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
   .center h2{font-size:30px}
   .optcards{display:flex;gap:12px;margin-top:10px}
-  .optcards div{width:132px;border-radius:20px;padding:14px 10px;color:#fff;font-weight:700;font-size:16px}
+  .optcards div{min-width:96px;border-radius:20px;padding:14px 10px;color:#fff;font-weight:700;font-size:16px}
   .optcards small{display:block;font-weight:500;opacity:.85;font-size:12px}
   .nav{position:sticky;bottom:0;padding:16px 20px calc(16px + env(safe-area-inset-bottom));display:flex;gap:10px}
   .btn{flex:1;border:none;border-radius:20px;padding:18px 16px;font-size:18px;font-weight:700;font-family:inherit;cursor:pointer;
@@ -178,7 +178,24 @@
     </div>
     <div class="nav stack">
       <button class="btn" id="doopt" style="--c:#8338EC">继续可选动作</button>
+      <button class="btn" id="gostretch" style="--c:#14B8A6">直接放松拉伸</button>
       <button class="btn ghost" id="skipopt">今天就到这里</button>
+    </div>
+  </section>
+
+  <section class="screen" id="gate2">
+    <div class="center">
+      <div class="big"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+      <h2>可选动作完成</h2>
+      <div class="optcards">
+        <div style="background:#14B8A6">婴儿式</div>
+        <div style="background:#F43F5E">仰卧抱膝</div>
+        <div style="background:#8B5CF6">四字拉伸</div>
+      </div>
+    </div>
+    <div class="nav stack">
+      <button class="btn" id="gostretch2" style="--c:#14B8A6">放松拉伸</button>
+      <button class="btn ghost" id="skipstretch">今天就到这里</button>
     </div>
   </section>
 
@@ -228,8 +245,18 @@ const STEPS = [
   { zh:"弹力带划船", cue:{"w": "拉向胸口", "r": "放回"}, detail:["弹力带绕在固定点，双手握两端", "站直，轻收核心，肩膀下沉", "手肘往后拉，夹紧肩胛骨", "不耸肩，不后仰，慢慢放回"], pose:"站立", c:"#F4511E", optional:true, dose:[["10","次"],["5","秒"],["2","组"]],
     how:["弹力带绕在固定点，双手握两端","后退拉紧，屈肘拉向胸口","夹紧肩胛骨，保持"] },
   { zh:"抗旋转推", detail:["身体侧对固定点站，双手把弹力带握在胸口", "迈步到有张力，双脚与肩同宽，膝盖微屈", "收紧核心和臀部，从胸口正前方推出，再收回", "身体不转，也不歪向固定点", "第二组换另一侧"], pose:"站立", c:"#0EA5E9", optional:true, phases:[{t:"推出 · 收紧核心",say:"推出，收紧核心",sec:2.5},{t:"收回 · 放松",say:"收回，放松",sec:2.5,kind:"rest"}], setRestSay:"第一组完成，休息30秒，然后换另一侧", dose:[["10","次"],["2","组"]],
-    how:["双手握带，迈步到有张力","双脚与肩同宽，膝盖微屈","从胸口向前推出，再收回"] }
+    how:["双手握带，迈步到有张力","双脚与肩同宽，膝盖微屈","从胸口向前推出，再收回"] },
+  { zh:"婴儿式", stretch:30, pose:"跪坐", c:"#14B8A6", dose:[["30","秒"]],
+    detail:["跪坐，膝盖分开与髋同宽","臀部往脚跟坐，上身往前趴下","双臂向前伸，额头放松贴地","感受下背放松，不要勉强"],
+    how:["跪坐，臀部往脚跟坐","上身趴下，双臂前伸","下背放松"] },
+  { zh:"仰卧抱膝", stretch:30, pose:"仰卧", c:"#F43F5E", dose:[["30","秒"]],
+    detail:["仰卧，双膝弯起","双手抱住膝盖，轻轻拉向胸口","头和肩膀放松贴地","不要勉强"],
+    how:["仰卧，双手抱膝","轻轻拉向胸口","下背放松"] },
+  { zh:"四字拉伸", stretch:30, pose:"仰卧", c:"#8B5CF6", dose:[["30","秒"]], split:["左脚踝搭右膝","右脚踝搭左膝"],
+    detail:["仰卧屈膝，一只脚踝搭在另一侧膝盖上，成四字","双手抱住下面那条腿的大腿，轻轻拉向胸口","感受搭着那一侧的臀部拉伸","头和肩膀放松贴地，不要勉强"],
+    how:["脚踝搭在另一侧膝盖上","抱住大腿拉向胸口","感受臀部拉伸"] }
 ];
+
 
 const FLOW = [];
 STEPS.forEach((s,k)=>{
@@ -237,7 +264,9 @@ STEPS.forEach((s,k)=>{
   if (s.split) s.split.forEach((lab,j)=>FLOW.push({...s, side:lab, sideNo:j}));
   else FLOW.push({...s, sideNo:0});
 });
-const CORE = FLOW.filter(s=>!s.optional).length;
+const CORE = FLOW.filter(s=>!s.optional && !s.stretch).length;
+const OPT_END = FLOW.filter(s=>!s.stretch).length;
+const STAGES = { core:[0,CORE], opt:[CORE,OPT_END], stretch:[OPT_END,FLOW.length] };
 
 const $ = id => document.getElementById(id);
 function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on', s.id===id)); window.scrollTo(0,0); }
@@ -325,7 +354,7 @@ function estSpeech(t){ return t.replace(/[，。、：·\s]/g,'').length*0.3 + 0
 
 function stepSegs(k){
   const s=FLOW[k], prev=FLOW[k-1], segs=[];
-  const reps=+s.dose[0][0], sets=+s.dose[s.dose.length-1][0], hold=s.pace?0:+s.dose[1][0];
+  const reps=+s.dose[0][0], sets=+s.dose[s.dose.length-1][0], hold=s.pace||s.stretch?0:+(s.dose[1]||[0])[0];
   // intro
   let text, pos;
   if (s.sideNo===1){ text=`换另一侧，${s.side}`; pos=0; }
@@ -337,6 +366,11 @@ function stepSegs(k){
   text = text.replace(/\s*\+\s*/g,'和').replace(/°/g,'度').replace(/：/g,'，').replace(/；/g,'。').replace(/\s+/g,'');
   segs.push({step:k, kind:'intro', t:s.sideNo===1?'换另一侧':'动作讲解', say:text, est:estSpeech(text), pos});
   segs.push({step:k, kind:'prep', t:'准备', sec:PREP, say:'准备'});
+  if (s.stretch){
+    segs.push({step:k, kind:'work', t:'保持拉伸', sec:s.stretch, say:'保持，慢慢放松', tick:true, stretchHold:true});
+    segs.push({step:k, kind:'rest', t:'慢慢回来', sec:3, say:'好，慢慢回来'});
+    return segs;
+  }
   for(let st=1; st<=sets; st++){
     for(let r=1; r<=reps; r++){
       const info={rep:r, reps, set:st, sets};
@@ -362,20 +396,20 @@ function stepSegs(k){
 function buildPlan(from, to){ let p=[]; for(let k=from;k<to;k++) p=p.concat(stepSegs(k)); return p; }
 
 /* ---------- engine ---------- */
-const P={ plan:[], idx:0, segStart:0, sec:0, paused:false, left:0, raf:0, lastWhole:-1, speechDone:true, curStep:-1, inOptional:false, running:false };
+const P={ plan:[], idx:0, segStart:0, sec:0, paused:false, left:0, raf:0, lastWhole:-1, speechDone:true, curStep:-1, stage:'core', running:false };
 const CIRC=2*Math.PI*52; $('tPrg').style.strokeDasharray=CIRC;
 const ICON_PAUSE='<path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/>', ICON_PLAY='<path d="M8 5v14l11-7z"/>';
 
 function renderStep(k){
   const s=FLOW[k]; P.curStep=k;
   $('player').style.setProperty('--c', s.c);
-  const total = P.inOptional ? FLOW.length : CORE;
-  $('count').textContent=`${k+1}/${total}`;
-  $('barfill').style.width=((k+1)/total*100)+'%';
+  const [a,b]=STAGES[P.stage], total=b-a, pos=k-a+1;
+  $('count').textContent=`${pos}/${total}`;
+  $('barfill').style.width=(pos/total*100)+'%';
   $('pName').textContent=s.zh;
   $('pOpt').hidden=!s.optional;
   $('pSide').hidden=!s.side; $('pSide').textContent=s.side||'';
-  $('pImg').src=IMGS[s.img]; $('pImg').alt=s.zh;
+  const img=IMGS[s.img]; $('pImg').parentNode.style.display = img ? '' : 'none'; if(img){ $('pImg').src=img; $('pImg').alt=s.zh; } else { $('pImg').removeAttribute('src'); }
   $('pDose').innerHTML=s.dose.map(d=>`<div><b>${d[0]}</b><span>${d[1]}</span></div>`).join('');
   $('pHow').innerHTML=(s.detail||s.how).map(h=>`<li>${h}</li>`).join('');
   $('pTip').textContent=s.tip||'';
@@ -442,7 +476,7 @@ function tick(){
       if (g.kind==='prep') say(String(whole));
       else if (g.tick || g.setRest) tick3();
     }
-    if (g.setRest && whole===10 && P.lastWhole!==-1) say('还有十秒');
+    if ((g.setRest||g.stretchHold) && whole===10 && P.lastWhole!==-1) say('还有十秒');
     P.lastWhole=whole;
   }
   if (left<=0){ next(); if(!P.running) return; }
@@ -455,9 +489,11 @@ function next(){
 }
 function endOfPlan(){
   P.running=false; cancelAnimationFrame(P.raf);
-  if (!P.inOptional){ show('gate'); say('基础动作全部完成。要做可选动作，就点继续。'); SND.done(); }
+  if (P.stage==='core'){ show('gate'); say('基础动作全部完成。可以做可选动作，或者直接放松拉伸。'); SND.done(); }
+  else if (P.stage==='opt'){ show('gate2'); say('可选动作完成。要放松拉伸吗？'); SND.done(); }
   else finish();
 }
+function startStage(st){ unlockAudio(); keepAwake(); P.stage=st; const [a,b]=STAGES[st]; startFrom(a,b); }
 function finish(){
   P.running=false; cancelAnimationFrame(P.raf); release();
   show('done'); say('全部完成，辛苦了！'); SND.done();
@@ -488,11 +524,11 @@ function startFrom(from, to){
 }
 
 /* ---------- buttons ---------- */
-$('go').onclick=()=>{ unlockAudio(); keepAwake(); P.inOptional=false; startFrom(0,CORE); };
+$('go').onclick=()=>startStage('core');
 $('bPlay').onclick=()=>{ unlockAudio(); P.paused?resume():pause(); };
 $('bNext').onclick=()=>{
   const k=P.curStep;
-  if (k+1 < (P.inOptional?FLOW.length:CORE)) jumpToStep(k+1);
+  if (k+1 < STAGES[P.stage][1]) jumpToStep(k+1);
   else { P.idx=P.plan.length-1; hush(); endOfPlan(); }
 };
 $('bPrev').onclick=()=>{
@@ -502,8 +538,11 @@ $('bPrev').onclick=()=>{
   if (P.plan.some(x=>x.step===target)) jumpToStep(target); else jumpToStep(g.step);
 };
 $('quit').onclick=()=>{ P.running=false; cancelAnimationFrame(P.raf); hush(); release(); show('start'); };
-$('doopt').onclick=()=>{ unlockAudio(); keepAwake(); P.inOptional=true; startFrom(CORE, FLOW.length); };
+$('doopt').onclick=()=>startStage('opt');
+$('gostretch').onclick=()=>startStage('stretch');
 $('skipopt').onclick=()=>finish();
+$('gostretch2').onclick=()=>startStage('stretch');
+$('skipstretch').onclick=()=>finish();
 $('restart').onclick=()=>show('start');
 (function(){ let n=0,t=0; const open=()=>{ const d=$('dbg'); d.textContent='诊断记录（截图发给 Claude，点任意处关闭）\n'+navigator.userAgent+'\nrate '+RATE.toFixed(3)+'\n\n'+DBG.join('\n'); d.style.display='block'; };
   $('dbg').onclick=()=>{ $('dbg').style.display='none'; };
