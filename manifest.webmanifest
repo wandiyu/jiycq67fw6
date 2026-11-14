@@ -1,6 +1,6 @@
 {
   "name": "le88rs04",
-  "short_name": "每日运动",
+  "short_name": "久坐运动",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

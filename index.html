@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="每日运动">
+<meta name="apple-mobile-web-app-title" content="久坐运动">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
@@ -94,7 +94,7 @@
   .big{width:110px;height:110px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#06D6A0,#3A86FF)}
   .big svg{width:54px;height:54px;stroke:#fff;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
   .center h2{font-size:30px}
-  .optcards{display:flex;gap:12px;margin-top:10px}
+  .optcards{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:10px;max-width:360px}
   .optcards div{min-width:96px;border-radius:20px;padding:14px 10px;color:#fff;font-weight:700;font-size:16px}
   .optcards small{display:block;font-weight:500;opacity:.85;font-size:12px}
   .nav{position:sticky;bottom:0;padding:16px 20px calc(16px + env(safe-area-inset-bottom));display:flex;gap:10px}
@@ -119,31 +119,46 @@
   .nav.two .btn b{font-size:19px}
   .nav.two .btn small{font-size:12px;font-weight:500;opacity:.85}
   #start .btn.relaxbtn{background:linear-gradient(90deg,#14B8A6,#8B5CF6);box-shadow:0 8px 22px -8px #14B8A6}
+
+  /* home v2 */
+  #start{justify-content:center;gap:34px;padding-bottom:calc(24px + env(safe-area-inset-bottom))}
+  #start .s-title{text-align:center;margin-top:-10px}
+  .modes{display:flex;flex-direction:column;gap:16px}
+  .mode{border:none;border-radius:26px;padding:22px 20px 18px;color:#fff;font-family:inherit;text-align:left;cursor:pointer;
+    background:linear-gradient(120deg,#FF5A5F,#FF8A00);box-shadow:0 10px 26px -10px #FF5A5F;display:flex;flex-direction:column;gap:14px}
+  .mode.relax{background:linear-gradient(120deg,#14B8A6,#8B5CF6);box-shadow:0 10px 26px -10px #14B8A6}
+  .mode:active{transform:scale(.98)}
+  .mode-t{font-size:28px;font-weight:900;letter-spacing:.02em}
+  .gear2{display:flex;gap:14px;flex-wrap:wrap}
+  .gear2>span{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:500}
+  .gear2 i{width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.22);display:grid;place-items:center}
+  .gear2 svg{width:26px;height:26px;stroke:#fff;fill:none;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
+  .gear2 .o{opacity:.7} .gear2 .o i{background:none;border:2px dashed rgba(255,255,255,.7)}
+  #start .guide{margin-top:0}
+  .seg button{padding:10px 14px;font-size:15px}
 </style>
 </head>
 <body>
 <div class="app">
 
   <section class="screen on" id="start">
-    <div class="s-wrap">
-      <h1 class="s-title">每日运动</h1>
-      <div class="gear">
-        <div><div class="gi" style="background:#FF5A5F"><svg viewBox="0 0 48 48"><rect x="6" y="17" width="36" height="14" rx="4"/><path d="M14 17v14M6 24h8"/></svg></div><span>瑜伽垫</span></div>
-        <div><div class="gi" style="background:#3A86FF"><svg viewBox="0 0 48 48"><ellipse cx="24" cy="24" rx="17" ry="11"/><ellipse cx="24" cy="24" rx="9" ry="5"/></svg></div><span>弹力带</span></div>
-        <div><div class="gi" style="background:#FF9F1C"><svg viewBox="0 0 48 48"><path d="M9 18l15-8 15 8v12l-15 8-15-8z"/><path d="M9 18l15 8 15-8M24 26v12"/></svg></div><span>瑜伽砖</span></div>
-        <div class="opt"><span class="badge">可选</span><div class="gi"><svg viewBox="0 0 48 48"><path d="M12 6v36"/><path d="M12 18h14a6 6 0 0 1 0 12H12"/><circle cx="36" cy="24" r="3"/></svg></div><span>固定点</span></div>
-      </div>
+    <h1 class="s-title">久坐运动</h1>
+    <div class="modes">
+      <button class="mode" id="go">
+        <span class="mode-t">核心运动</span>
+        <span class="gear2">
+          <span><i><svg viewBox="0 0 48 48"><rect x="6" y="17" width="36" height="14" rx="4"/><path d="M14 17v14M6 24h8"/></svg></i>瑜伽垫</span><span><i><svg viewBox="0 0 48 48"><ellipse cx="24" cy="24" rx="17" ry="11"/><ellipse cx="24" cy="24" rx="9" ry="5"/></svg></i>弹力带</span><span><i><svg viewBox="0 0 48 48"><path d="M9 18l15-8 15 8v12l-15 8-15-8z"/><path d="M9 18l15 8 15-8M24 26v12"/></svg></i>瑜伽砖</span><span class="o"><i><svg viewBox="0 0 48 48"><path d="M12 6v36"/><path d="M12 18h14a6 6 0 0 1 0 12H12"/><circle cx="36" cy="24" r="3"/></svg></i>固定点</span>
+        </span>
+      </button>
+      <button class="mode relax" id="goRelax">
+        <span class="mode-t">舒缓拉伸</span>
+        <span class="gear2"><span><i><svg viewBox="0 0 48 48"><rect x="6" y="17" width="36" height="14" rx="4"/><path d="M14 17v14M6 24h8"/></svg></i>瑜伽垫</span></span>
+      </button>
     </div>
     <div class="guide">
-      <div class="guide-l">动作讲解</div>
       <div class="seg" id="seg">
-        <button data-m="detail">详细</button><button data-m="simple">简单</button><button data-m="none">无</button>
+        <button data-m="detail">详细讲解</button><button data-m="simple">简单讲解</button><button data-m="none">无讲解</button>
       </div>
-    </div>
-    <div class="s-hint">关掉静音键才能听到声音</div>
-    <div class="nav two">
-      <button class="btn" id="go"><b>核心运动</b><small>10 个动作 · 可选加练</small></button>
-      <button class="btn relaxbtn" id="goRelax"><b>舒缓拉伸</b><small>开书 · 猫牛 · 3 个拉伸</small></button>
     </div>
   </section>
 
@@ -198,8 +213,10 @@
       <h2>可选动作完成</h2>
       <div class="optcards">
         <div style="background:#14B8A6">婴儿式</div>
-        <div style="background:#F43F5E">仰卧抱膝</div>
-        <div style="background:#8B5CF6">四字拉伸</div>
+        <div style="background:#0891B2">髋屈肌</div>
+        <div style="background:#F43F5E">抱膝</div>
+        <div style="background:#8B5CF6">四字</div>
+        <div style="background:#DB2777">扩胸</div>
       </div>
     </div>
     <div class="nav stack">
@@ -258,12 +275,18 @@ const STEPS = [
   { zh:"婴儿式", stretch:30, pose:"跪坐", c:"#14B8A6", dose:[["30","秒"]],
     detail:["跪坐，膝盖分开与髋同宽","臀部往脚跟坐，上身往前趴下","双臂向前伸，额头放松贴地","感受下背放松，不要勉强"],
     how:["跪坐，臀部往脚跟坐","上身趴下，双臂前伸","下背放松"] },
+  { zh:"跪姿髋屈肌拉伸", stretch:30, pose:"跪姿", c:"#0891B2", dose:[["30","秒"]], split:["左膝跪地","右膝跪地"],
+    detail:["单膝跪地，前脚踩地，两个膝盖都约90度","收紧臀部，骨盆慢慢往前推","感受跪地那条腿的髋前侧拉伸","上身保持直立，不要塌腰"],
+    how:["单膝跪地，前脚踩地","收紧臀部，骨盆往前推","上身直立，不塌腰"] },
   { zh:"仰卧抱膝", stretch:30, pose:"仰卧", c:"#F43F5E", dose:[["30","秒"]],
     detail:["仰卧，双膝弯起","双手抱住膝盖，轻轻拉向胸口","头和肩膀放松贴地","不要勉强"],
     how:["仰卧，双手抱膝","轻轻拉向胸口","下背放松"] },
   { zh:"四字拉伸", stretch:30, pose:"仰卧", c:"#8B5CF6", dose:[["30","秒"]], split:["左脚踝搭右膝","右脚踝搭左膝"],
     detail:["仰卧屈膝，一只脚踝搭在另一侧膝盖上，成四字","双手抱住下面那条腿的大腿，轻轻拉向胸口","感受搭着那一侧的臀部拉伸","头和肩膀放松贴地，不要勉强"],
-    how:["脚踝搭在另一侧膝盖上","抱住大腿拉向胸口","感受臀部拉伸"] }
+    how:["脚踝搭在另一侧膝盖上","抱住大腿拉向胸口","感受臀部拉伸"] },
+  { zh:"门框扩胸", stretch:30, pose:"站立", c:"#DB2777", dose:[["30","秒"]],
+    detail:["站在门框中间，前臂贴住两边门框，手肘约与肩同高","一只脚往前迈一小步，身体慢慢前倾","感受胸口和肩膀前侧拉开","不要耸肩，不要挺腰"],
+    how:["前臂贴住两边门框","身体慢慢前倾","胸口拉开，不耸肩"] }
 ];
 
 
