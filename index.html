@@ -121,14 +121,15 @@
   #start .btn.relaxbtn{background:linear-gradient(90deg,#14B8A6,#8B5CF6);box-shadow:0 8px 22px -8px #14B8A6}
 
   /* home v2 */
-  #start{justify-content:center;gap:34px;padding-bottom:calc(24px + env(safe-area-inset-bottom))}
+  #start{justify-content:center;gap:24px;padding-bottom:calc(24px + env(safe-area-inset-bottom))}
   #start .s-title{text-align:center;margin-top:-10px}
-  .modes{display:flex;flex-direction:column;gap:16px}
-  .mode{border:none;border-radius:26px;padding:22px 20px 18px;color:#fff;font-family:inherit;text-align:left;cursor:pointer;
-    background:linear-gradient(120deg,#FF5A5F,#FF8A00);box-shadow:0 10px 26px -10px #FF5A5F;display:flex;flex-direction:column;gap:14px}
+  .modes{display:flex;flex-direction:column;gap:12px}
+  .mode{border:none;border-radius:24px;padding:16px 18px 14px;color:#fff;font-family:inherit;text-align:left;cursor:pointer;
+    background:linear-gradient(120deg,#FF5A5F,#FF8A00);box-shadow:0 10px 26px -10px #FF5A5F;display:flex;flex-direction:column;gap:10px}
+  .mode.desk{background:linear-gradient(120deg,#3B82F6,#06B6D4);box-shadow:0 10px 26px -10px #3B82F6}
   .mode.relax{background:linear-gradient(120deg,#14B8A6,#8B5CF6);box-shadow:0 10px 26px -10px #14B8A6}
   .mode:active{transform:scale(.98)}
-  .mode-t{font-size:28px;font-weight:900;letter-spacing:.02em}
+  .mode-t{font-size:24px;font-weight:900;letter-spacing:.02em}
   .gear2{display:flex;gap:14px;flex-wrap:wrap}
   .gear2>span{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:500}
   .gear2 i{width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.22);display:grid;place-items:center}
@@ -153,6 +154,10 @@
       <button class="mode relax" id="goRelax">
         <span class="mode-t">舒缓拉伸</span>
         <span class="gear2"><span><i><svg viewBox="0 0 48 48"><rect x="6" y="17" width="36" height="14" rx="4"/><path d="M14 17v14M6 24h8"/></svg></i>瑜伽垫</span></span>
+      </button>
+      <button class="mode desk" id="goDesk">
+        <span class="mode-t">随时拉伸</span>
+        <span class="gear2"><span><i><svg viewBox="0 0 48 48"><path d="M15 6v36"/><path d="M15 26h19v16"/></svg></i>椅子</span></span>
       </button>
     </div>
     <div class="guide">
@@ -286,7 +291,30 @@ const STEPS = [
     how:["仰卧，双手抱膝","轻轻拉向胸口","下背放松"] },
   { zh:"四字拉伸", stretch:30, pose:"仰卧", c:"#8B5CF6", dose:[["30","秒"]], split:["左脚踝搭右膝","右脚踝搭左膝"],
     detail:["仰卧屈膝，一只脚踝搭在另一侧膝盖上，成四字","双手抱住下面那条腿的大腿，轻轻拉向胸口","感受搭着那一侧的臀部拉伸","头和肩膀放松贴地，不要勉强"],
-    how:["脚踝搭在另一侧膝盖上","抱住大腿拉向胸口","感受臀部拉伸"] }
+    how:["脚踝搭在另一侧膝盖上","抱住大腿拉向胸口","感受臀部拉伸"] },
+  { zh:"坐姿猫牛", desk:true, pose:"坐", c:"#F97316", dose:[["8","次"],["1","组"]],
+    phases:[{t:"挺胸抬头",say:"挺胸抬头",sec:4},{t:"拱背低头",say:"拱背低头",sec:4}],
+    detail:["坐在椅子前半部分，双手放在膝盖上","挺胸，骨盆往前倾，抬头","拱背，骨盆往后倾，低头","慢慢来，只在舒服的范围内动"],
+    how:["双手放在膝盖上","挺胸抬头","拱背低头"] },
+  { zh:"坐姿转体", desk:true, stretch:20, pose:"坐", c:"#06B6D4", dose:[["20","秒"]], split:["向左转","向右转"],
+    detail:["坐直，双脚踩地","一只手扶对侧膝盖外侧，另一只手扶椅背","先把背坐高，再慢慢转上身","眼睛跟着往后看，不要耸肩"],
+    how:["坐直，手扶膝盖和椅背","先坐高，再慢慢转身","不要耸肩"] },
+  { zh:"坐姿四字拉伸", desk:true, stretch:30, pose:"坐", c:"#A855F7", dose:[["30","秒"]], split:["左脚踝搭右膝","右脚踝搭左膝"],
+    detail:["坐在椅子前半部分","一只脚踝搭在另一侧膝盖上","背挺直，上身慢慢往前倾","感受搭着那一侧的臀部拉伸"],
+    how:["脚踝搭在对侧膝盖上","背挺直，上身前倾","感受臀部拉伸"] },
+  { zh:"颈部侧拉", desk:true, stretch:20, pose:"坐", c:"#EC4899", dose:[["20","秒"]], split:["头往右倒","头往左倒"],
+    detail:["坐直，肩膀放松","一只手轻轻把头往同侧肩膀带","另一侧肩膀往下沉","力度要轻，不要用力拉"],
+    how:["手轻轻把头往一侧带","另一侧肩膀下沉","力度要轻"] },
+  { zh:"手腕前臂拉伸", desk:true, stretch:30, pose:"坐", c:"#16A34A", dose:[["15","秒"],["2","个方向"]], split:["左手","右手"],
+    stretchPhases:[{t:"掌心朝前",say:"掌心朝前，手指往回扳",sec:15},{t:"掌心朝下",say:"翻过来，掌心朝下，手背往回压",sec:15}],
+    detail:["手臂往前伸直","掌心朝前，另一只手把手指往回扳","再翻过来掌心朝下，把手背往回压","手肘伸直，力度要轻"],
+    how:["手臂伸直","掌心朝前，扳手指","掌心朝下，压手背"] },
+  { zh:"站姿髋屈肌拉伸", desk:true, stretch:30, pose:"站立", c:"#3B82F6", dose:[["30","秒"]], split:["左腿在后","右腿在后"],
+    detail:["站着，一只脚往前迈成弓步，可以扶桌子或椅背","后腿伸直，收紧臀部","骨盆慢慢往前推，感受后腿那侧的髋前侧拉伸","上身保持直立，不要塌腰"],
+    how:["弓步站，扶着桌子","后腿伸直，收紧臀部","骨盆往前推，不塌腰"] },
+  { zh:"背后扣手扩胸", desk:true, stretch:30, pose:"站立", c:"#E11D48", dose:[["30","秒"]],
+    detail:["站直，双手在背后十指相扣","手臂伸直，胸口往上抬","肩胛骨往中间夹，肩膀下沉","不要耸肩，不要挺腰"],
+    how:["双手背后十指相扣","手臂伸直，胸口上抬","肩膀下沉"] }
 ];
 
 
@@ -296,11 +324,12 @@ STEPS.forEach((s,k)=>{
   if (s.split) s.split.forEach((lab,j)=>FLOW.push({...s, side:lab, sideNo:j}));
   else FLOW.push({...s, sideNo:0});
 });
-const CORE = FLOW.filter(s=>!s.optional && !s.stretch).length;
-const OPT_END = FLOW.filter(s=>!s.stretch).length;
+const CORE = FLOW.filter(s=>!s.optional && !s.stretch && !s.desk).length;
+const OPT_END = FLOW.filter(s=>!s.stretch && !s.desk).length;
 const rng=(a,b)=>Array.from({length:b-a},(_,i)=>a+i);
-const STAGES = { core:rng(0,CORE), opt:rng(CORE,OPT_END), stretch:rng(OPT_END,FLOW.length),
-  relax: FLOW.map((s,i)=>i).filter(i=>['开书式','猫牛式'].includes(FLOW[i].zh)).concat(rng(OPT_END,FLOW.length)) };
+const STR_IDX = FLOW.map((s,i)=>i).filter(i=>FLOW[i].stretch && !FLOW[i].desk);
+const STAGES = { core:rng(0,CORE), opt:rng(CORE,OPT_END), stretch:STR_IDX, desk:FLOW.map((s,i)=>i).filter(i=>FLOW[i].desk),
+  relax: FLOW.map((s,i)=>i).filter(i=>['开书式','猫牛式'].includes(FLOW[i].zh)).concat(STR_IDX) };
 
 const $ = id => document.getElementById(id);
 function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on', s.id===id)); window.scrollTo(0,0); }
@@ -401,7 +430,8 @@ function stepSegs(k, first){
   segs.push({step:k, kind:'intro', t:s.sideNo===1?'换另一侧':'动作讲解', say:text, est:estSpeech(text), pos});
   segs.push({step:k, kind:'prep', t:'准备', sec:PREP, say:'准备'});
   if (s.stretch){
-    segs.push({step:k, kind:'work', t:'保持拉伸', sec:s.stretch, say:'保持，慢慢放松', tick:true, stretchHold:true});
+    if (s.stretchPhases) s.stretchPhases.forEach(ph=>segs.push({step:k, kind:'work', t:ph.t, sec:ph.sec, say:ph.say, tick:true}));
+    else segs.push({step:k, kind:'work', t:'保持拉伸', sec:s.stretch, say:'保持，慢慢放松', tick:true, stretchHold:s.stretch>=20});
     segs.push({step:k, kind:'rest', t:'慢慢回来', sec:3, say:'好，慢慢回来'});
     return segs;
   }
@@ -560,6 +590,7 @@ function startFrom(list){
 /* ---------- buttons ---------- */
 $('go').onclick=()=>startStage('core');
 $('goRelax').onclick=()=>startStage('relax');
+$('goDesk').onclick=()=>startStage('desk');
 $('bPlay').onclick=()=>{ unlockAudio(); P.paused?resume():pause(); };
 $('bNext').onclick=()=>{
   const L=STAGES[P.stage], i=L.indexOf(P.curStep);
