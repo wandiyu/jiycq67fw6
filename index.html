@@ -252,7 +252,7 @@ const STEPS = [
     how:["坐或站，保持好姿势","肩胛骨向后、向下夹紧","保持，再放松"] },
   { zh:"腹横肌激活", cue:{"w": "收紧核心", "r": "放松"}, detail:["仰卧屈膝，手指放在髋骨内侧", "肚脐往下沉，下背轻压地面", "只用一两成力，手指下是往里收，不是往外鼓", "正常呼吸，不憋气"], pose:"仰卧", c:"#FF5A5F", dose:[["10","次"],["5","秒"],["1","组"]],
     how:["仰卧屈膝","肚脐往下沉，下背压地","拇指放骨盆内侧，感受收紧"] },
-  { zh:"开书式", cue:{"w": "打开", "r": "合上"}, detail:["侧躺，屈膝90度，两个膝盖叠在一起，双臂前伸", "轻轻收腹，膝盖全程贴住不分开", "上面的手臂向后打开，头跟着转", "只开到舒服的位置，再慢慢合回"], pose:"侧躺", c:"#FF8A00", dose:[["10","次"],["5","秒"],["1","组"]],
+  { zh:"开书式", cue:{"w": "打开", "r": "合上", "core": false}, detail:["侧躺，屈膝90度，两个膝盖叠在一起，双臂前伸", "两个膝盖全程贴住不分开", "上面的手臂向后打开，头跟着转", "只开到舒服的位置，再慢慢合回"], pose:"侧躺", c:"#FF8A00", dose:[["10","次"],["5","秒"],["1","组"]],
     split:["打开左臂","打开右臂"],
     how:["侧躺，屈膝 90°，双臂前伸","上臂向后打开成 T 字，头跟着转","停留，再合回"] },
   { zh:"猫牛式", detail:["跪趴，手在肩膀正下方，膝盖在髋部正下方", "塌腰抬头，再拱背低头", "慢慢来，一节一节动脊柱", "只在不痛的范围内动"], pose:"跪趴", c:"#06B6A4", dose:[["10","次"],["5","秒"],["1","组"]],
@@ -444,9 +444,14 @@ function stepSegs(k, first){
       else if (s.pace) segs.push({step:k, kind:'work', t:'推出 · 收回', sec:s.pace, say:`${r}`, ...info});
       else if (s.cue){
         const c=s.cue;
+        if (c.core===false){
+          segs.push({step:k, kind:'work', t:c.w, sec:hold, say:`${n}，${c.w}`, tick:true, ...info});
+          segs.push({step:k, kind:'rest', t:c.r, sec:REST, say:c.r, ...info});
+        } else {
         const core = c.w==='收紧核心' ? '' : '，收紧核心';
         segs.push({step:k, kind:'work', t:c.w==='收紧核心'?'收紧核心':`${c.w} · 收紧核心`, sec:hold, say:`${n}，${c.w}${core}`, tick:true, ...info});
         segs.push({step:k, kind:'rest', t:c.r==='放松'?'放松':`${c.r} · 放松`, sec:REST, say:c.r==='放松'?'放松':`${c.r}，放松`, ...info});
+        }
       }
       else {
         segs.push({step:k, kind:'work', t:'保持', sec:hold, say:`${n}，保持`, tick:true, ...info});
